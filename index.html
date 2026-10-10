@@ -1,0 +1,2526 @@
+<!--
+  OUTPOST — a listening post for your websites
+  Single file. No build step. Contacts only the stations you add (plus, ONLY if you switch them on:
+  Cloudflare DNS-over-HTTPS for the DNS signal, and Google/Cloudflare for the canary check).
+  Zero telemetry. CC0 1.0 Universal — do whatever you want with this.
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: http: https:; connect-src http: https:; base-uri 'none'; form-action 'none'; object-src 'none'">
+<meta name="description" content="OUTPOST: a single-file, browser-only reachability monitor for your own websites. Checks run in your browser, data stays in local storage, no telemetry.">
+<meta property="og:title" content="OUTPOST — a listening post for your websites">
+<meta property="og:description" content="Single-file, browser-only reachability monitor. No server, no account, no telemetry.">
+<meta property="og:type" content="website">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#17130f">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Outpost">
+<title>OUTPOST — a listening post for your websites</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' fill='%2317130f'/%3E%3Ccircle cx='20' cy='20' r='17' fill='none' stroke='%23c69544' stroke-width='1.6' opacity='0.55'/%3E%3Cpath d='M5 20 L14 20 L18 10 L22 30 L26 20 L35 20' fill='none' stroke='%23c69544' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' fill='%2317130f'/%3E%3Ccircle cx='20' cy='20' r='17' fill='none' stroke='%23c69544' stroke-width='1.6' opacity='0.55'/%3E%3Cpath d='M5 20 L14 20 L18 10 L22 30 L26 20 L35 20' fill='none' stroke='%23c69544' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<style>
+  :root{
+    --ink:#17130f;
+    --panel:#221c15;
+    --panel-2:#2a2318;
+    --line:#3a3226;
+    --paper:#ede3c8;
+    --bone:#ece4d3;
+    --ash:#a89a80;
+    --ash-dim:#9a907e;
+    --brass:#c69544;
+    --brass-dim:#8f6c34;
+    --signal-live:#7ea363;
+    --signal-live-bg:rgba(126,163,99,.12);
+    --signal-lost:#d4704a;
+    --signal-lost-bg:rgba(212,112,74,.14);
+    --signal-faint:#d9b463;
+    --signal-faint-bg:rgba(217,180,99,.12);
+    --radius-sm:3px;
+    --radius-md:7px;
+    --font-label:"Arial Narrow","Helvetica Neue Condensed","Helvetica Neue",Arial,sans-serif;
+    --font-serif:Georgia,"Iowan Old Style","Palatino Linotype","Book Antiqua",serif;
+    --font-mono:ui-monospace,"SF Mono","Cascadia Code","Fira Code",Consolas,"Courier New",monospace;
+  }
+  *{box-sizing:border-box;}
+  html,body{height:100%;}
+  body{
+    margin:0;
+    background:
+      radial-gradient(ellipse at top, #1c1710 0%, var(--ink) 60%);
+    color:var(--bone);
+    font-family:var(--font-serif);
+    line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+  }
+  .app{max-width:800px;margin:0 auto;padding:40px 22px 90px;}
+
+  /* ---------- header ---------- */
+  header.top{margin-bottom:26px;}
+  .brand{display:flex;align-items:center;gap:12px;}
+  .brand svg{flex:0 0 auto;display:block;}
+  .brand h1{
+    font-family:var(--font-label);
+    text-transform:uppercase;
+    letter-spacing:.14em;
+    font-weight:700;
+    font-size:1.5rem;
+    margin:0;
+    color:var(--bone);
+  }
+  .tagline{
+    margin:8px 0 0;
+    color:var(--ash);
+    font-size:.98rem;
+    font-style:italic;
+    max-width:46ch;
+  }
+  .logline{
+    margin-top:16px;
+    padding-top:14px;
+    border-top:1px solid var(--line);
+    font-family:var(--font-mono);
+    font-size:.78rem;
+    color:var(--ash);
+    letter-spacing:.02em;
+  }
+  .logline b{color:var(--bone);font-weight:600;}
+  .logline .lv-up{color:var(--signal-live);}
+  .logline .lv-down{color:var(--signal-lost);}
+  .logline .lv-faint{color:var(--signal-faint);}
+
+  /* ---------- panel: add + controls ---------- */
+  .panel{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:var(--radius-md);
+    padding:20px 22px;
+    margin-bottom:28px;
+  }
+  .panel h2{
+    font-family:var(--font-label);
+    text-transform:uppercase;
+    letter-spacing:.1em;
+    font-size:.78rem;
+    font-weight:700;
+    color:var(--ash);
+    margin:0 0 12px;
+  }
+  .add-form{display:flex;gap:10px;flex-wrap:wrap;}
+  .add-form input{flex:1 1 220px;}
+  .add-form button{flex:0 0 auto;}
+
+  input[type=text],select{
+    font-family:var(--font-mono);
+    font-size:.85rem;
+    background:var(--ink);
+    border:1px solid var(--line);
+    color:var(--bone);
+    border-radius:var(--radius-sm);
+    padding:9px 12px;
+    min-width:0;
+  }
+  input[type=text]::placeholder{color:var(--ash-dim);}
+  input[type=text]:focus-visible,select:focus-visible,
+  button:focus-visible,summary:focus-visible,a:focus-visible{
+    outline:2px solid var(--brass);
+    outline-offset:2px;
+  }
+
+  button,.btn{
+    font-family:var(--font-label);
+    text-transform:uppercase;
+    letter-spacing:.06em;
+    font-size:.76rem;
+    font-weight:700;
+    border-radius:var(--radius-sm);
+    border:1px solid var(--line);
+    background:var(--panel-2);
+    color:var(--bone);
+    padding:9px 16px;
+    cursor:pointer;
+    transition:background .15s,border-color .15s,transform .08s;
+  }
+  button:hover{background:#332b1d;border-color:#4a4029;}
+  button:active{transform:translateY(1px);}
+  button:disabled{opacity:.45;cursor:not-allowed;}
+  .btn-primary{background:var(--brass);border-color:var(--brass);color:#1c1508;}
+  .btn-primary:hover{background:#d5a355;border-color:#d5a355;}
+  .btn-quiet{background:transparent;}
+  .btn-danger{color:var(--signal-lost);}
+  .btn-danger:hover{border-color:var(--signal-lost);}
+  .icon-btn{
+    width:36px;height:36px;padding:0;
+    display:inline-flex;align-items:center;justify-content:center;
+    font-family:var(--font-label);font-size:1.05rem;
+  }
+
+  .controls{
+    display:flex;gap:16px;flex-wrap:wrap;align-items:center;
+    padding-top:16px;margin-top:16px;border-top:1px solid var(--line);
+  }
+  .ctrl{
+    display:flex;align-items:center;gap:7px;
+    font-family:var(--font-label);text-transform:uppercase;letter-spacing:.05em;
+    font-size:.72rem;color:var(--ash);
+  }
+  .ctrl select{padding:6px 8px;font-family:var(--font-label);font-size:.72rem;text-transform:uppercase;}
+  .ctrl input[type=checkbox]{accent-color:var(--brass);width:15px;height:15px;cursor:pointer;}
+  .spacer{flex:1 1 auto;}
+
+  /* ---------- station cards ---------- */
+  .site-list{display:flex;flex-direction:column;gap:12px;}
+  .station{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-left:4px solid var(--line);
+    border-radius:var(--radius-md);
+    overflow:hidden;
+    transition:border-color .2s;
+  }
+  .station.v-up{border-left-color:var(--signal-live);}
+  .station.v-down{border-left-color:var(--signal-lost);}
+  .station.v-timeout{border-left-color:var(--signal-faint);}
+  .station.v-checking{border-left-color:var(--brass);}
+  .station.v-maintenance{border-left-color:var(--brass-dim);}
+
+  .station-row{
+    display:flex;align-items:center;gap:16px;flex-wrap:wrap;
+    padding:14px 16px 6px;
+  }
+  .station-label{
+    font-family:var(--font-label);text-transform:uppercase;letter-spacing:.08em;
+    font-size:.7rem;font-weight:700;
+    display:inline-flex;align-items:center;gap:6px;
+    flex:0 0 auto;min-width:88px;
+  }
+  .station-label .dot{width:6px;height:6px;border-radius:50%;flex:0 0 auto;}
+  .station-label.v-up{color:var(--signal-live);}
+  .station-label.v-up .dot{background:var(--signal-live);}
+  .station-label.v-down .dot{background:var(--signal-lost);}
+  .station-label.v-down{color:var(--signal-lost);}
+  .station-label.v-timeout .dot{background:var(--signal-faint);}
+  .station-label.v-timeout{color:var(--signal-faint);}
+  .station-label.v-checking .dot{background:var(--brass);animation:blink 1.1s ease-in-out infinite;}
+  .station-label.v-checking{color:var(--brass);}
+  .station-label.v-unknown .dot{background:var(--ash-dim);}
+  .station-label.v-unknown{color:var(--ash-dim);}
+  .station-label.v-maintenance .dot{background:var(--brass-dim);}
+  .station-label.v-maintenance{color:var(--brass);}
+  @keyframes blink{0%,100%{opacity:1;}50%{opacity:.25;}}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(3px);}to{opacity:1;transform:translateY(0);}}
+
+  .station-info{flex:1 1 180px;min-width:150px;}
+  .station-name{font-family:var(--font-serif);font-size:1rem;font-weight:600;color:var(--bone);}
+  .station-url{font-family:var(--font-mono);font-size:.72rem;color:var(--ash-dim);word-break:break-all;}
+  .station-url a{color:inherit;text-decoration:none;}
+  .station-url a:hover,.station-url a:focus-visible{color:var(--brass);text-decoration:underline;}
+
+  .station-stats{display:flex;gap:18px;flex-wrap:wrap;}
+  .stat{display:flex;flex-direction:column;gap:1px;min-width:56px;}
+  .stat-label{font-family:var(--font-label);text-transform:uppercase;letter-spacing:.06em;font-size:.7rem;color:var(--ash-dim);}
+  .stat-val{font-family:var(--font-mono);font-size:.82rem;color:var(--bone);}
+
+  .station-actions{display:flex;gap:6px;align-items:center;flex:0 0 auto;}
+  .category-select,.subcategory-select{
+    font-family:var(--font-label);text-transform:uppercase;letter-spacing:.04em;font-size:.7rem;
+    background:var(--panel-2);border:1px solid var(--line);color:var(--ash);
+    border-radius:var(--radius-sm);padding:7px 6px;min-height:30px;max-width:120px;
+  }
+
+  .maint-row{padding:0 16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+  .badge-btn{margin-left:auto;}
+  .maint-select{
+    font-family:var(--font-label);text-transform:uppercase;letter-spacing:.04em;font-size:.7rem;
+    background:transparent;border:1px solid var(--line);color:var(--ash-dim);
+    border-radius:var(--radius-sm);padding:6px 6px;min-height:30px;
+  }
+  .maint-active{
+    display:flex;align-items:center;gap:8px;font-family:var(--font-mono);font-size:.72rem;
+    color:var(--brass);padding:4px 0;
+  }
+
+  .category-group{margin-bottom:14px;}
+  .category-group summary{
+    cursor:pointer;font-family:var(--font-label);text-transform:uppercase;letter-spacing:.1em;
+    font-size:.78rem;font-weight:700;color:var(--brass);padding:6px 2px;list-style:none;
+  }
+  .category-group summary::-webkit-details-marker{display:none;}
+  .category-group summary::before{content:"\25B8 ";}
+  .category-group[open] summary::before{content:"\25BE ";}
+  .category-group .cat-count{color:var(--ash-dim);font-weight:400;text-transform:none;letter-spacing:0;}
+  .category-sites{display:flex;flex-direction:column;gap:12px;margin-top:8px;}
+
+  .subcategory-group{margin-left:14px;padding-left:12px;border-left:1px solid var(--line);}
+  .subcategory-group summary{
+    cursor:pointer;font-family:var(--font-label);text-transform:uppercase;letter-spacing:.08em;
+    font-size:.7rem;font-weight:700;color:var(--ash);padding:4px 2px;list-style:none;
+  }
+  .subcategory-group summary::-webkit-details-marker{display:none;}
+  .subcategory-group summary::before{content:"\25B8 ";color:var(--ash-dim);}
+  .subcategory-group[open] summary::before{content:"\25BE ";color:var(--ash-dim);}
+  .subcategory-group .cat-count{color:var(--ash-dim);font-weight:400;text-transform:none;letter-spacing:0;}
+  .subcategory-group .category-sites{margin-top:6px;}
+
+  .signals{display:inline-flex;gap:3px;flex:0 0 auto;}
+  .sig{font-family:var(--font-mono);font-size:.7rem;padding:2px 5px;border-radius:2px;border:1px solid var(--line);letter-spacing:.03em;line-height:1;}
+  .sig-hit{color:var(--signal-live);border-color:var(--signal-live);}
+  .sig-miss{color:var(--signal-lost);border-color:var(--signal-lost);}
+  .sig-na{color:var(--ash-dim);}
+
+  .trend{font-size:.7rem;}
+  .trend-up{color:var(--signal-faint);}
+  .trend-down{color:var(--signal-live);}
+
+  .cause-note{padding:0 16px 4px;font-family:var(--font-mono);font-size:.7rem;color:var(--signal-lost);}
+  .pattern-note{padding:0 16px 6px;font-family:var(--font-serif);font-style:italic;font-size:.78rem;color:var(--ash-dim);}
+
+  .episodes{padding:0 16px 10px;}
+  .episodes-label{font-family:var(--font-label);text-transform:uppercase;letter-spacing:.06em;font-size:.7rem;color:var(--ash-dim);margin-bottom:4px;}
+  .episode{font-family:var(--font-mono);font-size:.72rem;color:var(--ash);padding:5px 0;border-bottom:1px solid var(--line);}
+  .episode:last-child{border-bottom:none;}
+  .episode-main{display:flex;align-items:center;gap:10px;}
+  .ep-note{font-family:var(--font-serif);font-style:italic;font-size:.74rem;color:var(--ash);padding:3px 0 0;}
+  .ep-note.ep-acked{font-family:var(--font-label);text-transform:uppercase;letter-spacing:.05em;font-style:normal;font-size:.7rem;color:var(--brass);}
+  .ep-duration{color:var(--signal-lost);font-weight:600;}
+  .ep-ongoing .ep-duration{color:var(--signal-faint);}
+  .mini-btn{flex:0 0 auto;font-family:var(--font-label);text-transform:uppercase;font-size:.7rem;letter-spacing:.05em;background:transparent;border:1px solid var(--line);color:var(--ash);padding:6px 10px;min-height:30px;border-radius:2px;cursor:pointer;}
+  .mini-btn:hover{border-color:var(--brass);color:var(--brass);}
+  .episode-actions{margin-left:auto;display:flex;gap:6px;flex:0 0 auto;}
+
+  .budget-ok{color:var(--signal-live);}
+  .budget-over{color:var(--signal-lost);}
+  .health-good{color:var(--signal-live);}
+  .health-mid{color:var(--signal-faint);}
+  .health-bad{color:var(--signal-lost);}
+  .predict-note{font-style:italic;color:var(--ash-dim);font-weight:400;}
+
+  .station-notes{padding:0 16px 12px;}
+  .station-notes summary{
+    cursor:pointer;font-family:var(--font-label);text-transform:uppercase;
+    letter-spacing:.06em;font-size:.7rem;color:var(--ash-dim);padding:6px 0;list-style:none;
+  }
+  .station-notes summary::-webkit-details-marker{display:none;}
+  .station-notes summary::before{content:"\25B8 ";color:var(--brass-dim);}
+  .station-notes[open] summary::before{content:"\25BE ";}
+  .notes-input{
+    width:100%;min-height:60px;resize:vertical;font-family:var(--font-serif);font-size:.85rem;
+    background:var(--ink);border:1px solid var(--line);border-radius:var(--radius-sm);
+    color:var(--bone);padding:8px 10px;box-sizing:border-box;
+  }
+  .notes-input::placeholder{color:var(--ash-dim);font-style:italic;}
+  .notes-input:focus-visible{outline:2px solid var(--brass);outline-offset:1px;}
+
+  .infra-note{
+    display:none;
+    background:transparent;border:1px solid var(--line);color:var(--ash);
+    border-radius:var(--radius-md);padding:10px 16px;margin-bottom:20px;
+    font-family:var(--font-serif);font-style:italic;font-size:.85rem;
+  }
+
+  .away-summary{
+    position:relative;background:var(--panel);border:1px solid var(--brass-dim);
+    border-radius:var(--radius-md);padding:14px 40px 14px 18px;margin-bottom:20px;
+  }
+  .away-title{font-family:var(--font-label);text-transform:uppercase;letter-spacing:.08em;font-size:.72rem;color:var(--brass);margin-bottom:8px;}
+  .away-events{font-family:var(--font-mono);font-size:.78rem;color:var(--ash);display:flex;flex-direction:column;gap:4px;}
+  .away-events strong{color:var(--bone);font-family:var(--font-serif);}
+  .away-dismiss{
+    position:absolute;top:8px;right:8px;width:32px;height:32px;padding:0;
+    background:transparent;border:none;color:var(--ash-dim);font-size:.95rem;cursor:pointer;
+  }
+  .away-dismiss:hover{color:var(--bone);}
+
+  input[type=time]{
+    font-family:var(--font-mono);font-size:.75rem;background:var(--ink);border:1px solid var(--line);
+    color:var(--bone);border-radius:var(--radius-sm);padding:4px 6px;color-scheme:dark;
+  }
+
+  .storage-banner{
+    display:none;
+    background:var(--signal-lost-bg);border:1px solid var(--signal-lost);color:var(--signal-lost);
+    border-radius:var(--radius-md);padding:12px 16px;margin-bottom:20px;
+    font-family:var(--font-serif);font-size:.88rem;font-weight:600;
+  }
+
+  .correlation-banner{
+    display:none;
+    background:var(--signal-faint-bg);border:1px solid var(--signal-faint);color:var(--signal-faint);
+    border-radius:var(--radius-md);padding:12px 16px;margin-bottom:20px;
+    font-family:var(--font-serif);font-size:.88rem;
+  }
+
+  .trace-wrap{padding:2px 16px 8px;}
+  svg.trace{width:100%;height:42px;display:block;}
+  .trace-empty{font-family:var(--font-mono);font-size:.7rem;fill:var(--ash-dim);}
+
+  .station-log{padding:0 16px 14px;}
+  .station-log summary{
+    cursor:pointer;font-family:var(--font-label);text-transform:uppercase;
+    letter-spacing:.06em;font-size:.7rem;color:var(--ash-dim);padding:6px 0;
+    list-style:none;
+  }
+  .station-log summary::-webkit-details-marker{display:none;}
+  .station-log summary::before{content:"▸ ";color:var(--brass-dim);}
+  .station-log[open] summary::before{content:"▾ ";}
+  .station-log table{width:100%;border-collapse:collapse;font-family:var(--font-mono);font-size:.7rem;margin-top:4px;}
+  .station-log td{padding:4px 6px;border-bottom:1px solid var(--line);color:var(--ash);}
+  .station-log td:first-child{color:var(--ash-dim);white-space:nowrap;}
+  .lg-up{color:var(--signal-live);}
+  .lg-down{color:var(--signal-lost);}
+  .lg-timeout{color:var(--signal-faint);}
+  .log-scroll{max-height:220px;overflow-y:auto;border:1px solid var(--line);border-radius:var(--radius-sm);}
+
+  .empty{
+    text-align:center;padding:44px 20px;color:var(--ash);
+    background:var(--panel);border:1px dashed var(--line);border-radius:var(--radius-md);
+    font-family:var(--font-serif);font-style:italic;
+  }
+
+  /* ---------- about / footer ---------- */
+  footer{margin-top:30px;}
+  footer details{
+    background:var(--panel);border:1px solid var(--line);border-radius:var(--radius-md);
+    padding:16px 20px;margin-bottom:16px;
+  }
+  footer summary{
+    cursor:pointer;font-family:var(--font-label);text-transform:uppercase;
+    letter-spacing:.08em;font-size:.78rem;font-weight:700;color:var(--brass);
+    list-style:none;
+  }
+  footer summary::-webkit-details-marker{display:none;}
+  footer summary::before{content:"▸ ";}
+  footer details[open] summary::before{content:"▾ ";}
+  .about-content{margin-top:14px;font-size:.9rem;color:var(--ash);}
+  .about-content p{margin:0 0 10px;}
+  .about-content ol,.about-content ul{padding-left:22px;margin:8px 0 14px;}
+  .about-content li{margin-bottom:6px;}
+  .about-content strong{color:var(--bone);}
+  .credit{text-align:center;color:var(--ash-dim);font-family:var(--font-mono);font-size:.7rem;letter-spacing:.03em;}
+
+  @media (max-width:600px){
+    .app{padding:26px 14px 70px;}
+    .station-row{padding:14px 14px 4px;}
+    .station-stats{gap:12px;}
+    .brand h1{font-size:1.25rem;}
+  }
+
+  /* ---------- toast ---------- */
+  .toast-container{position:fixed;bottom:18px;right:18px;left:18px;display:flex;flex-direction:column;align-items:flex-end;gap:8px;z-index:1000;pointer-events:none;}
+  .toast{
+    background:var(--panel-2);border:1px solid var(--line);border-left:3px solid var(--brass);
+    color:var(--bone);padding:10px 16px;border-radius:var(--radius-sm);
+    font-family:var(--font-serif);font-size:.85rem;max-width:340px;
+    opacity:0;transform:translateY(8px);transition:opacity .25s,transform .25s;
+    box-shadow:0 10px 28px rgba(0,0,0,.4);
+  }
+  .toast.show{opacity:1;transform:translateY(0);}
+  .toast-success{border-left-color:var(--signal-live);}
+  .toast-danger{border-left-color:var(--signal-lost);}
+  .toast-warn{border-left-color:var(--signal-faint);}
+
+  @media (prefers-reduced-motion:reduce){
+    *{animation-duration:.001ms !important;animation-iteration-count:1 !important;transition-duration:.001ms !important;}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="storage-banner" id="storageBanner" style="display:none;" role="alert">
+    &#9888; Not saving right now — storage may be full or disabled (e.g. private browsing). Changes here won't survive closing this tab until it clears.
+  </div>
+
+  <header class="top">
+    <div class="brand">
+      <svg width="38" height="38" viewBox="0 0 40 40" aria-hidden="true">
+        <circle cx="20" cy="20" r="17" fill="none" stroke="var(--brass)" stroke-width="1.4" opacity=".5"/>
+        <path d="M5 20 L14 20 L18 10 L22 30 L26 20 L35 20" fill="none" stroke="var(--brass)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <h1>Outpost</h1>
+    </div>
+    <p class="tagline">A listening post for your websites — logs who answers and who's gone quiet.</p>
+    <div class="logline" id="logLine">no stations logged yet</div>
+  </header>
+
+  <div class="away-summary" id="awaySummary" style="display:none;" role="status">
+    <button class="away-dismiss" id="awayDismiss" aria-label="Dismiss">&#10005;</button>
+    <div class="away-title">While you were away (<span id="awayDuration"></span>)</div>
+    <div class="away-events" id="awayEvents"></div>
+  </div>
+
+  <div class="correlation-banner" id="correlationBanner" role="status"></div>
+  <div class="infra-note" id="infraNote" role="status"></div>
+
+  <section class="panel">
+    <h2>Add a station</h2>
+    <form id="addForm" class="add-form" autocomplete="off">
+      <input type="text" id="urlInput" placeholder="https://example.com" required aria-label="Website URL">
+      <input type="text" id="nameInput" placeholder="Label (optional)" aria-label="Station label">
+      <input type="text" id="categoryInput" placeholder="Category (optional)" aria-label="Category" list="categoryOptions">
+      <datalist id="categoryOptions"></datalist>
+      <input type="text" id="subcategoryInput" placeholder="Subcategory (optional)" aria-label="Subcategory" list="subcategoryOptions">
+      <datalist id="subcategoryOptions"></datalist>
+      <input type="text" id="serverInput" placeholder="Server (optional)" aria-label="Server" list="serverOptions">
+      <datalist id="serverOptions"></datalist>
+      <button type="submit" class="btn-primary">Add station</button>
+    </form>
+
+    <div class="controls">
+      <button id="checkAllBtn" class="btn-quiet">Listen now</button>
+      <label class="ctrl">Auto-listen
+        <select id="autoRefreshSelect">
+          <option value="0">Off</option>
+          <option value="30000">30s</option>
+          <option value="60000">1 min</option>
+          <option value="300000">5 min</option>
+          <option value="900000">15 min</option>
+          <option value="1800000">30 min</option>
+        </select>
+      </label>
+      <label class="ctrl">Timeout
+        <select id="timeoutSelect">
+          <option value="5000">5s</option>
+          <option value="8000" selected>8s</option>
+          <option value="15000">15s</option>
+          <option value="30000">30s</option>
+        </select>
+      </label>
+      <label class="ctrl">Confirm after
+        <select id="confirmSelect">
+          <option value="1">1 check</option>
+          <option value="2" selected>2 checks</option>
+          <option value="3">3 checks</option>
+        </select>
+      </label>
+      <label class="ctrl">Target
+        <select id="targetSelect">
+          <option value="99">99%</option>
+          <option value="99.5" selected>99.5%</option>
+          <option value="99.9">99.9%</option>
+          <option value="99.95">99.95%</option>
+        </select>
+      </label>
+      <label class="ctrl">Group by
+        <select id="groupBySelect">
+          <option value="category" selected>Category</option>
+          <option value="server">Server</option>
+        </select>
+      </label>
+      <label class="ctrl">Sort
+        <select id="sortSelect">
+          <option value="health" selected>Health</option>
+          <option value="latency">Latency</option>
+          <option value="name">Name</option>
+          <option value="added">Recently added</option>
+        </select>
+      </label>
+      <label class="ctrl">Show
+        <select id="filterSelect">
+          <option value="all" selected>All stations</option>
+          <option value="trouble">Trouble only</option>
+        </select>
+      </label>
+      <label class="ctrl">Category
+        <select id="categoryFilterSelect">
+          <option value="all" selected>All categories</option>
+        </select>
+      </label>
+      <label class="ctrl" title="Sends each hostname to Cloudflare (cloudflare-dns.com) to check whether it resolves. Off by default."><input type="checkbox" id="dnsToggle"> DNS signal (Cloudflare)</label>
+      <label class="ctrl" title="Pings google.com and cloudflare.com after each batch to tell your own connection trouble from station trouble. Off by default."><input type="checkbox" id="canaryToggle"> Canary (Google/Cloudflare)</label>
+      <label class="ctrl"><input type="checkbox" id="soundToggle"> Sound on change</label>
+      <label class="ctrl"><input type="checkbox" id="notifyToggle"> Notify on change</label>
+      <label class="ctrl"><input type="checkbox" id="quietToggle"> Quiet hours
+        <input type="time" id="quietStartInput" value="23:00" aria-label="Quiet hours start">
+        <span>&ndash;</span>
+        <input type="time" id="quietEndInput" value="07:00" aria-label="Quiet hours end">
+      </label>
+      <label class="ctrl">Remind me
+        <select id="reminderSelect">
+          <option value="0" selected>Off</option>
+          <option value="1800000">Every 30 min</option>
+          <option value="3600000">Every hour</option>
+          <option value="7200000">Every 2 hours</option>
+        </select>
+      </label>
+      <div class="spacer"></div>
+      <button id="shareBtn" class="btn-quiet">Share status page</button>
+      <button id="exportBtn" class="btn-quiet">Export log</button>
+      <button id="importBtn" class="btn-quiet">Import log</button>
+      <input type="file" id="importFile" accept="application/json,.json" hidden aria-label="Import log file">
+      <button id="resetBtn" class="btn-quiet btn-danger">Clear log</button>
+    </div>
+  </section>
+
+  <section class="site-list" id="siteList"></section>
+
+  <footer>
+    <details>
+      <summary>How the listening works</summary>
+      <div class="about-content">
+        <p>OUTPOST runs entirely in your browser. There's no server behind it, so it can't read a site's real HTTP status the way a proper monitoring service can — a page can only ask another origin "did anything answer," not "what did it say." Each check listens for three independent signals:</p>
+        <ol>
+          <li><strong>A HEAD request with CORS disabled.</strong> The browser can't read the reply's contents, but it knows whether one arrived at all. Outright silence — DNS failure, refused connection, timeout — is the strongest evidence something's actually wrong.</li>
+          <li><strong>A probe for the site's favicon.</strong> Loads if the origin answers, fails if it doesn't. On its own this is unreliable — plenty of live sites simply have no favicon.ico at that exact path — so it only ever backs up signal one, never overrides it.</li>
+          <li><strong>An optional DNS lookup</strong> (off by default; switch on "DNS signal"), via Cloudflare's public DNS-over-HTTPS resolver — which means each hostname you watch is sent to Cloudflare — — the only way a browser page can ask "does this domain even resolve," which is otherwise invisible to JavaScript. This is a genuinely different question from "did the server answer": a domain that won't resolve points at DNS or registration trouble, not a crashed web server, and OUTPOST says so specifically when that's what happened. It depends on a third party being reachable, so it's cached for five minutes per domain (to be light on a free public resource) and fails open — if Cloudflare is blocked, offline, or rate-limits the request, this signal is simply left out rather than guessed at. Turn it off in settings any time.</li>
+        </ol>
+        <p>A single reading marks <strong>CONTACT</strong> if either of the first two signals gets through, <strong>SILENT</strong> if both fail outright, <strong>FAINT</strong> if neither resolves cleanly. The <em>displayed</em> status waits for confirmation, though: "Confirm after" sets how many consecutive non-CONTACT readings are needed before a station is actually shown as SILENT — recovery is always immediate, only bad news waits, so one flaky request doesn't cry wolf.</p>
+        <p>Each station tracks confirmed outages as <strong>episodes</strong> (start, end, duration), dated from the first raw reading that went wrong rather than the later moment OUTPOST became confident — so the timeline reflects what happened, not the confirmation delay. Resolved episodes get a "copy report" button for a plain-text summary to paste into a ticket or log. If several stations go quiet in the same batch, a banner suggests the more likely explanation is this end of the connection — network, DNS, browser — not every site failing at once; that's a heuristic based on the fraction of stations affected, not a certainty, especially with only a handful of stations logged.</p>
+        <p>When you switch on the optional <strong>canary</strong> (off by default), each check batch also pings two well-known, unrelated, extremely-reliable sites (Google, Cloudflare) — your IP address is therefore visible to them — as a <strong>canary</strong> — the same idea an operating system uses to tell "no internet" from "you're fine." When several stations go quiet at once, the canary turns the correlation banner from a guess into evidence: if it also can't get through, the trouble really is on this end; if it answers fine, the affected stations more likely have a real, if coincidental, problem of their own.</p>
+        <p>An ongoing outage that has happened to a station before gets a light, clearly-labeled estimate — "typically back within Xm" — averaged from that station's own past resolved outages. It's a pattern, not a promise. Each station also carries a <strong>30-day budget</strong> figure: time-weighted (actual outage duration, not a ratio of sampled checks) against a target uptime you set in "Target" — how much downtime is left before that target is blown for the month, or by how much it already has been.</p>
+        <p><strong>Share status page</strong> writes a separate, static, read-only HTML snapshot of the current watchlist — no script, no storage, nothing live — that can be uploaded anywhere to show others what OUTPOST last saw, without handing them the monitoring tool itself. It won't update on its own; re-export when you want a fresher one. Both it and a copied incident report carry a SHA-256 hash of their own content, computed with the browser's native Web Crypto — a way to prove later that a report or snapshot wasn't edited after the fact. That needs a secure context (this file served over HTTPS, or opened from localhost); under plain HTTP or a raw file:// path the hash is simply left off rather than faked.</p>
+        <p>Two stations that resolve to the <strong>same IP address</strong> get flagged as likely sharing infrastructure — reusing the DNS lookups already being made, no extra requests. If they're the same box or sit behind the same proxy, an outage in one probably isn't a coincidence when the other follows. When auto-listen is on, a station caught between a failed raw reading and confirmation gets rechecked within about 20 seconds instead of waiting out the full interval, so a real problem gets confirmed — or a blip gets forgiven — faster, without polling settled stations any harder.</p>
+        <p>Each station also has a spot for your own <strong>runbook notes</strong> — who to call, what to restart, where to look. Written once, it opens on its own the moment that station actually goes quiet. Each individual outage can separately carry a short <strong>cause note</strong> — what actually happened this time, distinct from the standing runbook guidance — added while it's ongoing or any time after, and folded into that outage's copied report and escalation email. An ongoing outage can be <strong>acknowledged</strong> to pause its repeating reminders specifically — lighter than scheduling maintenance, for "I've seen this one, stop nudging me about it" without silencing anything else. <strong>Quiet hours</strong> mute the sound and browser notification for status changes during a time window you set — the toast, the trace, and the station's own status still update as normal, only the audible/push alerting is held back.</p>
+        <p>If local storage ever stops accepting writes — full, or disabled by the browser (private browsing sometimes restricts it) — a banner says so plainly instead of failing silently. Everything keeps working in this session; it just won't survive closing the tab until storage is available again.</p>
+        <p>Buttons and selects are sized for a thumb, not just a cursor — the check and remove icons in particular, since a mis-tap on "remove" is the one action here that isn't undoable. Add this page to a phone's home screen and it launches full-screen, without browser chrome, using its own icon.</p>
+        <p>The uptime figure on each card is a <strong>24-hour, time-weighted</strong> number once there's enough elapsed time to compute one — actual downtime duration within that window, the same basis competitors' dashboards lead with, rather than a coarser ratio of however many checks happened to land during an outage. Hover it for the 7-day figure too; the 30-day budget stat already covers the longer window.</p>
+        <p>Stations can carry a <strong>category</strong> — Personal, Work, Projects, Organizations, or anything typed in — which groups the list into collapsible sections and can be filtered down to just one. A category with enough stations to need it can carry a <strong>subcategory</strong> too, nested one level inside — a station without one still sits directly in its category, unindented, so a small category never grows a pointless empty sub-section. A station can separately carry which <strong>server</strong> hosts it — a different axis from category (what it's <em>for</em> vs. what it's <em>on</em>) — and the "Group by" control switches the whole list between the two views without touching either field. <strong>Maintenance windows</strong> (30 min to indefinite) freeze the parts of OUTPOST that would otherwise treat planned downtime as a real incident: no episode opens, no notification fires, and the time is cut out of the 30-day budget and the correlation count entirely. Checks still run underneath, so the data keeps flowing — only the interpretation pauses.</p>
+        <p><strong>Remind me</strong> repeats the alert on an interval for as long as a station stays confirmed down, instead of the one notification on the initial transition going unnoticed if you're away from the tab — mirrors the "resend interval" idea from other monitoring tools. Off by default. Each station also has a <strong>svg badge</strong> download — a small, shields.io-style status badge sized to actually embed in a README or a personal page, distinct from the full status-page snapshot. Both it and the status page reflect a station's maintenance state rather than showing planned work as a real outage.</p>
+        <p>Modeled in part on what self-hosted and commercial uptime tools (Uptime Kuma and its competitors) tend to offer. A few of their standard features don't survive the trip to a client-side, no-server tool and are left out on purpose rather than faked: reading a certificate's expiry date requires a raw TLS handshake browsers don't expose to page scripts, and no free, keyless API fills that gap the way Cloudflare's DNS resolver does for the DNS signal; checking from multiple regions would require routing through third-party proxy servers OUTPOST has no way to vet; and matching keywords inside a page's content is blocked by the same opaque no-cors response that makes the reachability check itself possible in the first place.</p>
+        <p>Reopen this file after being away for a while and, if anything happened, a dismissible panel reconstructs it from the outage log itself — no separate tracking, just reading back through episodes that started after the last time this tab was active. The browser tab's title and icon also carry a live trouble count, so a glance at the tab bar is enough without switching over.</p>
+        <p>Once there are enough stations that a flat list stops being scannable, <strong>Health</strong> gives each one a single 0-100 number — 70% current confirmed status, 30% historical uptime, with small penalties for a worsening latency trend or a blown budget — and <strong>Sort</strong>/<strong>Show</strong> let the list order by it (worst first, by default) or by latency, name, or recency, and optionally hide anything that isn't currently in trouble.</p>
+        <p>Every outage — ongoing or resolved — has an <strong>email</strong> button alongside "copy report" that opens a pre-filled message (subject, timing, duration, and any runbook notes for that station) with the recipient left blank on purpose, since OUTPOST shouldn't guess who the right person to tell is.</p>
+        <p>Shortcuts: <strong>L</strong> listens now, <strong>/</strong> jumps to the add field, <strong>E</strong> exports — all inactive while typing in a field.</p>
+        <p>What none of this can do:</p>
+        <ul>
+          <li>Tell a 500 error from a 200 OK — only whether the server responded, not what it said.</li>
+          <li>Check a plain-HTTP site from a page served over HTTPS — the browser blocks that outright as mixed content. Open this file over HTTP or as a local file to listen to HTTP-only stations.</li>
+          <li>Keep listening while the tab is closed or backgrounded for long — browsers throttle timers in inactive tabs, so auto-listen is no substitute for real server-side monitoring.</li>
+          <li>Notice when a CDN or edge server answers on behalf of an origin that's actually down.</li>
+        </ul>
+        <p>Everything — the station list, the full check log, episodes, your settings — stays in this browser's local storage. Nothing is sent anywhere except the reachability checks to the stations you add (each station sees your IP address, like any visitor, and also gets a request for /favicon.ico) and, only if you switch them on, DNS lookups to Cloudflare's resolver and the Google/Cloudflare canary. "Contact" means only that something answered at the network level — an error page (404, 500, 502) also counts as Contact. The exported log contains your station list, notes and last-seen IP addresses: treat it as private. Export the log any time to back it up or move it to another browser; if this file is open in two tabs at once, they stay in sync automatically.</p>
+      </div>
+    </details>
+    <p class="credit">OUTPOST · single file, no dependencies, no telemetry · CC0 1.0</p>
+  </footer>
+
+</div>
+<div id="toastContainer" class="toast-container" aria-live="polite"></div>
+
+<script>
+(function(){
+  'use strict';
+
+  var $ = function(sel, el){ return (el || document).querySelector(sel); };
+
+  var STORAGE_KEY = 'outpost_state_v1';
+  var HISTORY_CAP = 500;
+  var VERDICT_LABEL = { up:'Contact', down:'Silent', timeout:'Faint', checking:'Listening…', unknown:'Unlogged', maintenance:'Maintenance' };
+
+  var defaultState = function(){
+    return {
+      sites: [],
+      history: {},
+      settings: { timeoutMs: 8000, autoRefreshMs: 0, sound: false, notify: false, dnsSignal: false, canary: false, confirmThreshold: 2, targetUptimePct: 99.5, quietHours: false, quietStart: 1380, quietEnd: 420, listSort: 'health', listFilter: 'all', categoryFilter: 'all', reminderMs: 0, groupBy: 'category' },
+      lastFullCheckAt: null,
+      lastActiveAt: null,
+      dnsCache: {},
+      appliedSeedSets: []
+    };
+  };
+
+  // The one place that knows how to turn "some object that looks like state" into a
+  // complete, correctly-shaped state — used by loadState, import, and cross-tab sync
+  // alike, so adding a new top-level field later only ever has to happen here. (It didn't,
+  // once: lastActiveAt was added to defaultState() but two of the three reconstruction
+  // sites kept their own copy of this logic and quietly fell out of sync with it.)
+  // ---- Validation of anything that comes from storage, another tab, or an imported file ----
+  // Imported/corrupted JSON is untrusted: it ends up in innerHTML (class names, data-
+  // attributes, href), so every field is whitelisted/typed here before it is used.
+  var STORED_VERDICTS = { up:1, down:1, timeout:1 };
+  function cleanStr(v, max){ return typeof v === 'string' ? v.slice(0, max) : ''; }
+  function cleanNum(v){ return (typeof v === 'number' && isFinite(v)) ? v : null; }
+  function pick(v, allowed, fallback){ return allowed.indexOf(v) !== -1 ? v : fallback; }
+
+  function cleanSettings(src, base){
+    src = (src && typeof src === 'object') ? src : {};
+    var o = base;
+    o.timeoutMs = pick(src.timeoutMs, [5000, 8000, 15000, 30000], base.timeoutMs);
+    o.autoRefreshMs = pick(src.autoRefreshMs, [0, 30000, 60000, 300000, 900000, 1800000], 0);
+    o.confirmThreshold = pick(src.confirmThreshold, [1, 2, 3], base.confirmThreshold);
+    o.targetUptimePct = pick(src.targetUptimePct, [99, 99.5, 99.9, 99.95], base.targetUptimePct);
+    o.reminderMs = pick(src.reminderMs, [0, 1800000, 3600000, 7200000], 0);
+    o.listSort = pick(src.listSort, ['health', 'latency', 'name', 'added'], 'health');
+    o.listFilter = pick(src.listFilter, ['all', 'trouble'], 'all');
+    o.groupBy = pick(src.groupBy, ['category', 'server'], 'category');
+    ['sound', 'notify', 'dnsSignal', 'canary', 'quietHours'].forEach(function(k){
+      if (typeof src[k] === 'boolean') o[k] = src[k];
+    });
+    ['quietStart', 'quietEnd'].forEach(function(k){
+      var n = cleanNum(src[k]);
+      if (n !== null && n >= 0 && n < 1440) o[k] = Math.floor(n);
+    });
+    o.categoryFilter = (typeof src.categoryFilter === 'string' && src.categoryFilter) ? src.categoryFilter.slice(0, 100) : 'all';
+    return o;
+  }
+
+  function cleanHistoryList(list){
+    if (!Array.isArray(list)) return [];
+    var out = [];
+    list.slice(-HISTORY_CAP).forEach(function(h){
+      if (!h || typeof h !== 'object') return;
+      var t = cleanNum(h.timestamp);
+      if (t === null || !STORED_VERDICTS[h.verdict]) return;
+      out.push({ timestamp: t, verdict: h.verdict, latency: cleanNum(h.latency) });
+    });
+    return out;
+  }
+
+  function cleanSite(s, usedIds){
+    if (!s || typeof s !== 'object') return null;
+    var url = normalizeUrl(cleanStr(s.url, 2048));
+    if (!url) return null;               // also rejects javascript:, data:, file: ...
+    var id = (typeof s.id === 'string' && /^[A-Za-z0-9_-]{1,64}$/.test(s.id) && !usedIds[s.id]) ? s.id : uid();
+    usedIds[id] = true;
+    var site = {
+      id: id,
+      name: cleanStr(s.name, 200) || url,
+      url: url,
+      category: cleanStr(s.category, 100).trim(),
+      subcategory: cleanStr(s.subcategory, 100).trim(),
+      server: cleanStr(s.server, 200).trim(),
+      notes: cleanStr(s.notes, 5000),
+      addedAt: cleanNum(s.addedAt) || Date.now(),
+      lastVerdict: STORED_VERDICTS[s.lastVerdict] ? s.lastVerdict : null,
+      lastLatency: cleanNum(s.lastLatency),
+      lastCheckedAt: cleanNum(s.lastCheckedAt),
+      checking: false,                   // never persist an in-flight check (it would block all future checks)
+      maintenanceUntil: cleanNum(s.maintenanceUntil),
+      maintenanceLog: [],
+      lastCause: cleanStr(s.lastCause, 200) || null,
+      lastIp: cleanStr(s.lastIp, 64) || null,
+      consecutiveFailures: cleanNum(s.consecutiveFailures) || 0,
+      firstFailureAt: cleanNum(s.firstFailureAt),
+      lastReminderAt: cleanNum(s.lastReminderAt),
+      reminderAcked: s.reminderAcked === true,
+      episodes: []
+    };
+    if (Array.isArray(s.maintenanceLog)) s.maintenanceLog.slice(-200).forEach(function(m){
+      if (m && cleanNum(m.start) !== null) site.maintenanceLog.push({ start: m.start, end: cleanNum(m.end) });
+    });
+    if (Array.isArray(s.episodes)) s.episodes.slice(-100).forEach(function(e){
+      if (e && cleanNum(e.startedAt) !== null) site.episodes.push({ startedAt: e.startedAt, endedAt: cleanNum(e.endedAt), note: cleanStr(e.note, 500) });
+    });
+    if (s.lastSignals && typeof s.lastSignals === 'object') {
+      site.lastSignals = {
+        dns: pick(s.lastSignals.dns, ['resolved', 'nxdomain', 'unknown'], 'unknown'),
+        fetch: pick(s.lastSignals.fetch, ['reachable', 'unreachable', 'timeout'], 'unreachable'),
+        image: pick(s.lastSignals.image, ['reachable', 'unreachable', 'timeout'], 'unreachable')
+      };
+    }
+    return site;
+  }
+
+  // Returns { sites, history } with every site validated; history is re-keyed to the final ids.
+  function cleanSitesAndHistory(rawSites, rawHistory, usedIds){
+    var sites = [], history = {};
+    rawHistory = (rawHistory && typeof rawHistory === 'object') ? rawHistory : {};
+    (Array.isArray(rawSites) ? rawSites : []).slice(0, 5000).forEach(function(raw){
+      var oldId = raw && typeof raw.id === 'string' ? raw.id : null;
+      var site = cleanSite(raw, usedIds);
+      if (!site) return;
+      sites.push(site);
+      var h = (oldId && Object.prototype.hasOwnProperty.call(rawHistory, oldId)) ? cleanHistoryList(rawHistory[oldId]) : [];
+      history[site.id] = h;
+    });
+    return { sites: sites, history: history };
+  }
+
+  function coerceStateShape(source){
+    var base = defaultState();
+    source = (source && typeof source === 'object') ? source : {};
+    var cleaned = cleanSitesAndHistory(source.sites, source.history, {});
+    var dnsCache = {};
+    if (source.dnsCache && typeof source.dnsCache === 'object') {
+      Object.keys(source.dnsCache).slice(0, 100).forEach(function(host){
+        var e = source.dnsCache[host];
+        if (e && e.result && cleanNum(e.checkedAt) !== null) {
+          dnsCache[host.slice(0, 253)] = { checkedAt: e.checkedAt, result: { status: pick(e.result.status, ['resolved', 'nxdomain', 'unknown'], 'unknown'), ip: cleanStr(e.result.ip, 64) || null } };
+        }
+      });
+    }
+    return {
+      sites: cleaned.sites,
+      history: cleaned.history,
+      settings: cleanSettings(source.settings, base.settings),
+      lastFullCheckAt: cleanNum(source.lastFullCheckAt),
+      lastActiveAt: cleanNum(source.lastActiveAt),
+      dnsCache: dnsCache,
+      appliedSeedSets: Array.isArray(source.appliedSeedSets) ? source.appliedSeedSets.filter(function(x){ return typeof x === 'string'; }).slice(0, 50) : []
+    };
+  }
+
+  function loadState(){
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return defaultState();
+      return coerceStateShape(JSON.parse(raw));
+    } catch(e) {
+      console.warn('Outpost: local storage unavailable, falling back to in-memory state for this session.', e);
+      return defaultState();
+    }
+  }
+
+  var storageBroken = false;
+
+  // checkOne() reports progress by calling render()/saveState() on its own completion,
+  // which is fine site-by-site but becomes O(n^2) work across a full checkAll() batch --
+  // each of n sites finishing triggers a full O(n) re-render and a full-state
+  // JSON.stringify. Coalescing rapid-fire calls into one within a short window keeps the
+  // live "checking..." feedback close to immediate while checking a handful of sites, and
+  // keeps a checkAll() over a much larger watchlist from doing needless repeat work.
+  // checkAll()'s own final render()/saveState() (unscheduled, called directly) is what
+  // guarantees the end state always gets rendered and persisted even if scheduled calls
+  // are still pending when it fires.
+  var renderTimer = null;
+  function scheduleRender(){
+    if (renderTimer) return;
+    renderTimer = setTimeout(function(){ renderTimer = null; render(); }, 50);
+  }
+  var saveTimer = null;
+  function scheduleSave(){
+    if (saveTimer) return;
+    saveTimer = setTimeout(function(){ saveTimer = null; saveState(); }, 50);
+  }
+
+  function saveState(){
+    state.lastActiveAt = Date.now();
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      if (storageBroken) {
+        storageBroken = false;
+        var banner = $('#storageBanner');
+        if (banner) banner.style.display = 'none';
+        showToast('Storage is saving again', 'success');
+      }
+    } catch(e) {
+      console.warn('Outpost: could not persist state (storage may be disabled or full).', e);
+      if (!storageBroken) {
+        storageBroken = true;
+        var banner2 = $('#storageBanner');
+        if (banner2) banner2.style.display = '';
+      }
+    }
+  }
+
+  // No station is pre-loaded: a fresh install contacts nothing until you add something.
+  // Three harmless examples can be added with one click (empty-state button).
+  var EXAMPLE_STATIONS = [
+    { name:'Example Domain', url:'https://example.com/', category:'Examples' },
+    { name:'Example Org', url:'https://example.org/', category:'Examples' },
+    { name:'Deliberately missing host (shows a Silent station)', url:'https://this-host-does-not-exist.invalid/', category:'Examples' }
+  ];
+
+  var state = loadState();
+
+  function addExampleStations(){
+    var existing = {};
+    state.sites.forEach(function(s){ existing[s.url] = true; });
+    var added = 0;
+    EXAMPLE_STATIONS.forEach(function(ex){
+      var url = normalizeUrl(ex.url);
+      if (!url || existing[url]) return;
+      state.sites.push({ id: uid(), name: ex.name, url: url, category: ex.category || '', subcategory: '', server: '', notes: '', addedAt: Date.now(), lastVerdict: null, lastLatency: null, lastCheckedAt: null, checking: false, maintenanceUntil: null, maintenanceLog: [], episodes: [] });
+      added++;
+    });
+    saveState();
+    render();
+    if (added) { showToast(added + ' example station' + (added === 1 ? '' : 's') + ' added', 'success'); checkAll(); }
+  }
+
+  function localStorage_hasKey(){
+    try { return localStorage.getItem(STORAGE_KEY) !== null; } catch(e) { return false; }
+  }
+
+  function uid(){
+    if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
+    return 'id-' + Date.now() + '-' + Math.random().toString(36).slice(2,9);
+  }
+
+  function escapeHtml(str){
+    return String(str).replace(/[&<>"']/g, function(c){
+      return { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c];
+    });
+  }
+
+  function timeAgo(ts){
+    if (!ts) return 'never';
+    var s = Math.floor((Date.now() - ts) / 1000);
+    if (s < 10) return 'just now';
+    if (s < 60) return s + 's ago';
+    var m = Math.floor(s / 60);
+    if (m < 60) return m + 'm ago';
+    var h = Math.floor(m / 60);
+    if (h < 24) return h + 'h ago';
+    var d = Math.floor(h / 24);
+    if (d < 30) return d + 'd ago';
+    return new Date(ts).toLocaleDateString();
+  }
+
+  function normalizeUrl(raw){
+    var url = (raw || '').trim();
+    if (!url) return null;
+    if (!/^[a-zA-Z][a-zA-Z0-9+.-]*:\/\//.test(url)) url = 'https://' + url;
+    try {
+      var parsed = new URL(url);
+      if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') return null; // a website monitor only ever means http(s)
+      return parsed.href;
+    } catch(e) { return null; }
+  }
+
+  // ---------------- Site CRUD ----------------
+
+  var DEFAULT_CATEGORIES = ['Personal', 'Work', 'Projects', 'Organizations'];
+
+  function getKnownCategories(){
+    var set = {};
+    DEFAULT_CATEGORIES.forEach(function(c){ set[c] = true; });
+    state.sites.forEach(function(s){ if (s.category) set[s.category] = true; });
+    return Object.keys(set).sort();
+  }
+
+  // Subcategories aren't predefined the way categories are -- they only make sense once a
+  // category has enough sites to actually need splitting further, so the list is purely
+  // whatever's already in use.
+  function getKnownSubcategories(){
+    var set = {};
+    state.sites.forEach(function(s){ if (s.subcategory) set[s.subcategory] = true; });
+    return Object.keys(set).sort();
+  }
+
+  function getKnownServers(){
+    var set = {};
+    state.sites.forEach(function(s){ if (s.server) set[s.server] = true; });
+    return Object.keys(set).sort();
+  }
+
+  function addSite(rawUrl, rawName, rawCategory, rawSubcategory, rawServer){
+    var normalized = normalizeUrl(rawUrl);
+    if (!normalized) { showToast('Not a valid URL', 'danger'); return; }
+    if (state.sites.some(function(s){ return s.url === normalized; })) {
+      showToast('Already listening to this station', 'warn'); return;
+    }
+    var hostname;
+    try { hostname = new URL(normalized).hostname; } catch(e) { hostname = normalized; }
+    var name = (rawName || '').trim().slice(0, 200) || hostname;
+    var category = (rawCategory || '').trim();
+    var subcategory = (rawSubcategory || '').trim();
+    var server = (rawServer || '').trim();
+    var site = { id: uid(), name: name, url: normalized, category: category, subcategory: subcategory, server: server, addedAt: Date.now(), lastVerdict: null, lastLatency: null, lastCheckedAt: null, checking: false, maintenanceUntil: null, maintenanceLog: [] };
+    state.sites.push(site);
+    saveState();
+    render();
+    showToast('Station logged: ' + name, 'success');
+    checkOne(site.id);
+  }
+
+  function removeSite(id){
+    var site = state.sites.find(function(s){ return s.id === id; });
+    if (!site) return;
+    state.sites = state.sites.filter(function(s){ return s.id !== id; });
+    delete state.history[id];
+    saveState();
+    render();
+    showToast('Station removed: ' + site.name, 'info');
+  }
+
+  // ---------------- Maintenance windows ----------------
+  // Planned downtime that shouldn't count as an outage: no episode, no notification, no
+  // dent in the 30-day budget for that stretch of time. Checks still run underneath, so
+  // data keeps flowing — only the *interpretation* changes while it's active.
+
+  var MAINTENANCE_INDEFINITE = 100 * 365 * 24 * 60 * 60 * 1000; // "until I end it"
+
+  function isInMaintenance(site){
+    return !!(site.maintenanceUntil && site.maintenanceUntil > Date.now());
+  }
+
+  function startMaintenance(site, durationMs){
+    if (!isInMaintenance(site)) {
+      site.maintenanceLog = site.maintenanceLog || [];
+      site.maintenanceLog.push({ start: Date.now(), end: null });
+    }
+    site.maintenanceUntil = Date.now() + durationMs;
+  }
+
+  function endMaintenanceNow(site){
+    var log = site.maintenanceLog || [];
+    if (log.length && log[log.length - 1].end == null) log[log.length - 1].end = Date.now();
+    site.maintenanceUntil = null;
+  }
+
+  // A maintenance window that has simply timed out still needs its log entry closed off —
+  // called on each check so the budget math stays accurate even if nobody clicks "end".
+  function reconcileMaintenance(site){
+    if (site.maintenanceUntil && site.maintenanceUntil <= Date.now()) {
+      var log = site.maintenanceLog || [];
+      if (log.length && log[log.length - 1].end == null) log[log.length - 1].end = site.maintenanceUntil;
+      site.maintenanceUntil = null;
+    }
+  }
+
+  // ---------------- Checking ----------------
+
+  function imagePing(url, timeoutMs){
+    return new Promise(function(resolve){
+      var settled = false;
+      var timer = setTimeout(function(){ finish('timeout'); }, timeoutMs);
+      function finish(result){
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        resolve(result);
+      }
+      var origin;
+      try { origin = new URL(url).origin; } catch(e) { finish('unreachable'); return; }
+      var img = new Image();
+      img.onload = function(){ finish('reachable'); };
+      img.onerror = function(){ finish('unreachable'); };
+      img.src = origin + '/favicon.ico?_outpost=' + Date.now();
+    });
+  }
+
+  // A third, independent signal: does the hostname resolve at all? This is a genuinely
+  // different question from "did the server answer HTTP" — a domain that doesn't resolve
+  // points at DNS/registration trouble, not a crashed web server. Uses Cloudflare's public
+  // DoH JSON endpoint, which is explicitly designed for exactly this kind of browser-side
+  // fetch(). Cached per hostname for DNS_CACHE_MS so frequent auto-listen cycles don't
+  // hammer a public resource DNS rarely changes that fast anyway. Fails open: any problem
+  // (blocked, offline, rate-limited, malformed reply) yields 'unknown' and is simply left
+  // out of the picture rather than asserted as a fact.
+  var DNS_CACHE_MS = 5 * 60 * 1000;
+
+  function checkDns(hostname, timeoutMs){
+    if (typeof fetch !== 'function' || typeof AbortController !== 'function') return Promise.resolve({ status:'unknown', ip:null });
+    try {
+      var controller = new AbortController();
+      var t = setTimeout(function(){ controller.abort(); }, Math.min(timeoutMs, 5000));
+      return fetch('https://cloudflare-dns.com/dns-query?name=' + encodeURIComponent(hostname) + '&type=A', {
+          headers: { 'Accept': 'application/dns-json' },
+          signal: controller.signal,
+          cache: 'no-store'
+        })
+        .then(function(res){ return res.ok ? res.json() : null; })
+        .then(function(data){
+          if (!data || typeof data !== 'object') return { status:'unknown', ip:null };
+          if (data.Status === 0 && Array.isArray(data.Answer) && data.Answer.length > 0) {
+            var aRecord = data.Answer.filter(function(a){ return a.type === 1; })[0] || data.Answer[0];
+            return { status:'resolved', ip: aRecord.data || null };
+          }
+          if (data.Status === 3) return { status:'nxdomain', ip:null };
+          return { status:'unknown', ip:null }; // SERVFAIL/REFUSED/etc — inconclusive, never asserted as a negative
+        })
+        .catch(function(){ return { status:'unknown', ip:null }; })
+        .finally(function(){ clearTimeout(t); });
+    } catch(syncErr) {
+      return Promise.resolve({ status:'unknown', ip:null });
+    }
+  }
+
+  function getDnsResult(hostname, timeoutMs){
+    if (!state.settings.dnsSignal || !hostname) return Promise.resolve({ status:'unknown', ip:null });
+    var cache = state.dnsCache = state.dnsCache || {};
+    var entry = cache[hostname];
+    if (entry && (Date.now() - entry.checkedAt) < DNS_CACHE_MS) return Promise.resolve(entry.result);
+    return checkDns(hostname, timeoutMs).then(function(result){
+      cache[hostname] = { result: result, checkedAt: Date.now() };
+      var keys = Object.keys(cache);
+      if (keys.length > 100) {
+        keys.sort(function(a, b){ return cache[a].checkedAt - cache[b].checkedAt; });
+        keys.slice(0, keys.length - 100).forEach(function(k){ delete cache[k]; });
+      }
+      return result;
+    });
+  }
+
+  function isMixedContent(url){
+    return location.protocol === 'https:' && /^http:/i.test(url);
+  }
+
+  function checkSite(site){
+    var timeoutMs = state.settings.timeoutMs || 8000;
+    var fetchStart = performance.now();
+    var hostname = null;
+    try { hostname = new URL(site.url).hostname; } catch(e) {}
+
+    var fetchOutcome;
+    if (typeof fetch !== 'function' || typeof AbortController !== 'function') {
+      fetchOutcome = Promise.resolve({ result: 'unreachable', latency: Math.round(performance.now() - fetchStart) });
+    } else {
+      try {
+        var controller = new AbortController();
+        var t = setTimeout(function(){ controller.abort(); }, timeoutMs);
+        fetchOutcome = fetch(site.url, { method:'HEAD', mode:'no-cors', cache:'no-store', redirect:'follow', signal: controller.signal })
+          .then(function(){
+            return { result:'reachable', latency: Math.round(performance.now() - fetchStart) };
+          })
+          .catch(function(err){
+            return { result: err.name === 'AbortError' ? 'timeout' : 'unreachable', latency: Math.round(performance.now() - fetchStart) };
+          })
+          .finally(function(){ clearTimeout(t); });
+      } catch(syncErr) {
+        // fetch() itself threw synchronously instead of rejecting -- rare, but some
+        // inputs can trigger this in some browsers. Must never take checkSite down with it.
+        fetchOutcome = Promise.resolve({ result: 'unreachable', latency: Math.round(performance.now() - fetchStart) });
+      }
+    }
+
+    var imageOutcome = imagePing(site.url, timeoutMs);
+    var dnsOutcome = getDnsResult(hostname, timeoutMs);
+
+    return Promise.all([fetchOutcome, imageOutcome, dnsOutcome]).then(function(results){
+      return { fetchResult: results[0].result, imageResult: results[1], dnsResult: results[2].status, dnsIp: results[2].ip, latency: results[0].latency, timestamp: Date.now() };
+    }).catch(function(err){
+      // Belt-and-braces: a station must never get stuck in "Listening..." because
+      // of an unexpected error in a probe. Fall back to a safe reading instead.
+      console.warn('Outpost: probe failed unexpectedly for', site.url, err);
+      return { fetchResult:'unreachable', imageResult:'unreachable', dnsResult:'unknown', dnsIp:null, latency: Math.round(performance.now() - fetchStart), timestamp: Date.now() };
+    });
+  }
+
+  function computeVerdict(fetchResult, imageResult){
+    if (fetchResult === 'reachable' || imageResult === 'reachable') return 'up';
+    if (fetchResult === 'unreachable' && imageResult === 'unreachable') return 'down';
+    return 'timeout';
+  }
+
+  // DNS never overrides fetch/image (a resolving domain can still have a dead server —
+  // that's the ordinary outage case), it only sharpens *why* a down verdict happened.
+  function diagnoseCause(verdict, dnsResult){
+    if (verdict !== 'down') return null;
+    if (dnsResult === 'nxdomain') return 'domain does not resolve';
+    if (dnsResult === 'resolved') return 'domain resolves — server not responding';
+    return null;
+  }
+
+  function checkOne(id){
+    var site = state.sites.find(function(s){ return s.id === id; });
+    if (!site || site.checking) return Promise.resolve();
+    if (isMixedContent(site.url)) {
+      // An https page cannot probe http:// at all (mixed content is blocked): that would read as a false Silent.
+      site.lastVerdict = null; site.lastLatency = null; site.lastCheckedAt = Date.now();
+      site.lastCause = 'http:// station cannot be checked from an https page (mixed content). Open this file locally (file://) or use https:// for the station.';
+      site.lastSignals = null;
+      scheduleSave(); scheduleRender();
+      return Promise.resolve();
+    }
+    site.checking = true;
+    scheduleRender();
+    return checkSite(site).then(function(result){
+      if (state.sites.indexOf(site) === -1) return; // removed mid-flight
+      site.checking = false;
+      reconcileMaintenance(site);
+      var wasInMaintenance = isInMaintenance(site);
+      var rawVerdict = computeVerdict(result.fetchResult, result.imageResult);
+      site.lastSignals = { dns: result.dnsResult, fetch: result.fetchResult, image: result.imageResult };
+      site.lastLatency = result.latency;
+      site.lastCheckedAt = result.timestamp;
+      if (result.dnsIp) site.lastIp = result.dnsIp; // keep the last known-good IP even if this check's DNS probe was inconclusive
+
+      // Log every raw reading, blips included — the trace and full log should show
+      // what actually happened, separate from the smoothed/confirmed status below.
+      if (!state.history[site.id]) state.history[site.id] = [];
+      state.history[site.id].push({ timestamp: result.timestamp, verdict: rawVerdict, latency: result.latency });
+      if (state.history[site.id].length > HISTORY_CAP) {
+        state.history[site.id] = state.history[site.id].slice(-HISTORY_CAP);
+      }
+
+      // Confirmation gate: the DISPLAYED status only flips to trouble after N consecutive
+      // non-up readings, so one flaky request doesn't cry wolf. Recovery is immediate —
+      // only bad news waits. The very first check for a site always confirms right away.
+      // This keeps tracking normally even during maintenance, so the status is accurate
+      // the moment maintenance ends rather than showing something stale.
+      var prevVerdict = site.lastVerdict;
+      if (rawVerdict === 'up') {
+        site.consecutiveFailures = 0;
+        site.firstFailureAt = null;
+        site.lastVerdict = 'up';
+      } else {
+        if (!site.consecutiveFailures) site.firstFailureAt = result.timestamp;
+        site.consecutiveFailures = (site.consecutiveFailures || 0) + 1;
+        if (site.consecutiveFailures >= (state.settings.confirmThreshold || 1) || !prevVerdict) {
+          site.lastVerdict = rawVerdict;
+        }
+      }
+      var verdict = site.lastVerdict;
+      site.lastCause = diagnoseCause(verdict, result.dnsResult);
+
+      // Outage episodes track continuous confirmed trouble, dated from the first observed
+      // failure (not the later confirmation point) so the log reflects reality, not the
+      // smoothing delay. Frozen during maintenance — planned downtime isn't an outage.
+      var episodes = site.episodes = site.episodes || [];
+      var openEpisode = episodes.length && episodes[episodes.length - 1].endedAt == null ? episodes[episodes.length - 1] : null;
+      if (!wasInMaintenance) {
+        if (verdict === 'up') {
+          if (openEpisode) openEpisode.endedAt = result.timestamp;
+        } else if (verdict === 'down' && !openEpisode) {
+          episodes.push({ startedAt: site.firstFailureAt || result.timestamp, endedAt: null });
+        }
+      }
+      if (episodes.length > 100) site.episodes = episodes.slice(-100);
+
+      if (!wasInMaintenance && prevVerdict && prevVerdict !== verdict &&
+          (prevVerdict === 'up' || prevVerdict === 'down') &&
+          (verdict === 'up' || verdict === 'down')) {
+        handleStatusChange(site, prevVerdict, verdict);
+        if (verdict === 'down') { site.lastReminderAt = result.timestamp; site.reminderAcked = false; } // interval counts from the initial alert
+        if (verdict === 'up') { site.lastReminderAt = null; site.reminderAcked = false; } // a future outage starts its own timer, unacknowledged
+      }
+
+      // Still down, not a fresh transition, not in maintenance, not acknowledged: nudge
+      // again once the configured interval has passed instead of going silent after the
+      // one alert.
+      if (!wasInMaintenance && verdict === 'down' && !site.reminderAcked && (state.settings.reminderMs || 0) > 0) {
+        var sinceReminder = site.lastReminderAt ? (result.timestamp - site.lastReminderAt) : Infinity;
+        if (sinceReminder >= state.settings.reminderMs) {
+          site.lastReminderAt = result.timestamp;
+          remindStillDown(site);
+        }
+      }
+
+      // A station reading unconfirmed trouble (raw failed, but the confirm-threshold
+      // hasn't been met yet so it's still displayed as up) gets a sooner recheck instead
+      // of waiting out the full interval — reaches confirmation, or a bounce back to
+      // clean, faster. Only while auto-listen is on, so this never runs as a surprise
+      // background poll when the person only wanted on-demand checks. Self-terminating:
+      // once confirmed either way, this condition stops being true.
+      if (rawVerdict !== 'up' && verdict === 'up' && state.settings.autoRefreshMs > 0) {
+        var accelMs = Math.min(20000, Math.max(3000, state.settings.autoRefreshMs - 1000));
+        setTimeout(function(){ checkOne(site.id); }, accelMs);
+      }
+
+      scheduleSave();
+      scheduleRender();
+    });
+  }
+
+  // Two well-known, unrelated, extremely-reliable endpoints, checked once per batch —
+  // the same idea operating systems use to tell "no internet" from "captive portal" from
+  // "you're fine". If OUTPOST can't reach either one, that's real evidence the trouble is
+  // on this end, not a guess based on how many watched stations happen to be quiet.
+  var CANARY_URLS = ['https://www.google.com/', 'https://www.cloudflare.com/'];
+
+  function checkCanary(timeoutMs){
+    if (typeof fetch !== 'function' || typeof AbortController !== 'function') return Promise.resolve(null);
+    var checks = CANARY_URLS.map(function(url){
+      try {
+        var controller = new AbortController();
+        var t = setTimeout(function(){ controller.abort(); }, Math.min(timeoutMs, 5000));
+        return fetch(url, { method:'HEAD', mode:'no-cors', cache:'no-store', signal: controller.signal })
+          .then(function(){ return true; })
+          .catch(function(){ return false; })
+          .finally(function(){ clearTimeout(t); });
+      } catch(syncErr) {
+        // A synchronous throw here previously would have taken down .map() entirely,
+        // which would have taken checkCanary down, which would have taken checkAll()
+        // down for every station — not just the canary. Never again.
+        return Promise.resolve(false);
+      }
+    });
+    return Promise.all(checks).then(function(results){
+      var okCount = results.filter(Boolean).length;
+      return { okCount: okCount, total: results.length, healthy: okCount > 0 };
+    });
+  }
+
+  // Concurrent, but in bounded batches rather than all at once — considerate of hosts
+  // that carry several of these stations at once (several subdomains on one server), and
+  // a gentler burst on the browser's own connection pool as the watchlist grows.
+  var CHECK_BATCH_SIZE = 10;
+
+  function checkAll(){
+    state.lastFullCheckAt = Date.now();
+    var canaryPromise = (state.settings.canary ? checkCanary(state.settings.timeoutMs || 8000) : Promise.resolve(null)).then(function(result){
+      if (result) state.canary = { healthy: result.healthy, okCount: result.okCount, total: result.total, checkedAt: Date.now() };
+    }).catch(function(){});
+
+    var sites = state.sites.slice();
+    function runBatch(startIdx){
+      var batch = sites.slice(startIdx, startIdx + CHECK_BATCH_SIZE);
+      if (!batch.length) return Promise.resolve();
+      return Promise.all(batch.map(function(s){ return checkOne(s.id); }))
+        .then(function(){ return runBatch(startIdx + CHECK_BATCH_SIZE); });
+    }
+
+    return Promise.all([runBatch(0), canaryPromise]).then(function(){
+      if (renderTimer) { clearTimeout(renderTimer); renderTimer = null; }
+      if (saveTimer) { clearTimeout(saveTimer); saveTimer = null; }
+      saveState();
+      render();
+    });
+  }
+
+  // Minutes-since-midnight window that can wrap past midnight (e.g. 23:00-07:00).
+  // Suppresses only sound and push notifications — the toast and the station's own
+  // status still update normally, so nothing is hidden, just not blared at 3am.
+  function isQuietHours(){
+    if (!state.settings.quietHours) return false;
+    var now = new Date();
+    var mins = now.getHours() * 60 + now.getMinutes();
+    var start = state.settings.quietStart, end = state.settings.quietEnd;
+    if (start === end) return false;
+    return start < end ? (mins >= start && mins < end) : (mins >= start || mins < end);
+  }
+
+  function handleStatusChange(site, from, to){
+    var msg = site.name + ': ' + VERDICT_LABEL[from].toUpperCase() + ' \u2192 ' + VERDICT_LABEL[to].toUpperCase();
+    showToast(msg, to === 'up' ? 'success' : 'danger');
+    if (isQuietHours()) return;
+    if (state.settings.sound) playBeep(to === 'up' ? 880 : 220, 200);
+    if (state.settings.notify && 'Notification' in window && Notification.permission === 'granted') {
+      try {
+        new Notification('OUTPOST — ' + site.name + ' is ' + VERDICT_LABEL[to].toUpperCase(), {
+          body: 'Changed from ' + VERDICT_LABEL[from] + ' to ' + VERDICT_LABEL[to] + ' at ' + new Date().toLocaleTimeString()
+        });
+      } catch(e) { /* notification creation can fail silently in some contexts */ }
+    }
+  }
+
+  // A single alert on the initial transition can get lost if you're away from the tab —
+  // this nudges again on a set interval for as long as a station stays down, the way
+  // other monitoring tools' "resend interval" does. Off by default; opts in via settings.
+  function remindStillDown(site){
+    showToast(site.name + ': still SILENT', 'danger');
+    if (isQuietHours()) return;
+    if (state.settings.sound) playBeep(220, 150);
+    if (state.settings.notify && 'Notification' in window && Notification.permission === 'granted') {
+      try {
+        new Notification('OUTPOST \u2014 ' + site.name + ' still down', {
+          body: 'Been silent since ' + (site.firstFailureAt ? new Date(site.firstFailureAt).toLocaleString() : 'earlier') + '.'
+        });
+      } catch(e) {}
+    }
+  }
+
+  function playBeep(freq, duration){
+    try {
+      var Ctx = window.AudioContext || window.webkitAudioContext;
+      var ctx = new Ctx();
+      var osc = ctx.createOscillator();
+      var gain = ctx.createGain();
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.frequency.value = freq;
+      osc.type = 'sine';
+      gain.gain.setValueAtTime(0.16, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + duration / 1000);
+      osc.start();
+      osc.stop(ctx.currentTime + duration / 1000);
+      osc.onended = function(){ ctx.close(); };
+    } catch(e) { console.warn('Outpost: audio unavailable', e); }
+  }
+
+  // ---------------- Rendering ----------------
+
+  function uptimePercent(history){
+    if (!history || !history.length) return null;
+    var up = history.filter(function(h){ return h.verdict === 'up'; }).length;
+    return Math.round((up / history.length) * 100);
+  }
+
+  function verdictVar(v){
+    return { up:'var(--signal-live)', down:'var(--signal-lost)', timeout:'var(--signal-faint)' }[v] || 'var(--ash)';
+  }
+
+  function formatDuration(ms){
+    if (ms == null || ms < 0) return '';
+    var s = Math.round(ms / 1000);
+    if (s < 60) return s + 's';
+    var m = Math.floor(s / 60); s = s % 60;
+    if (m < 60) return m + 'm ' + s + 's';
+    var h = Math.floor(m / 60); m = m % 60;
+    if (h < 24) return h + 'h ' + m + 'm';
+    var d = Math.floor(h / 24); h = h % 24;
+    return d + 'd ' + h + 'h';
+  }
+
+  // Is this station trending slower or faster? Compares the last 3 timed readings
+  // against the 3 before that. A creeping latency often precedes a real outage.
+  function latencyTrend(history){
+    var timed = history.filter(function(h){ return h.latency != null; });
+    if (timed.length < 6) return null;
+    var recent = timed.slice(-3), older = timed.slice(-6, -3);
+    var avg = function(arr){ return arr.reduce(function(a,h){ return a + h.latency; }, 0) / arr.length; };
+    var a = avg(recent), b = avg(older);
+    if (b === 0) return null;
+    var change = (a - b) / b;
+    if (change > 0.15) return 'slower';
+    if (change < -0.15) return 'faster';
+    return null;
+  }
+
+  // A single explainable number, not a black box: 70% current confirmed status (a station
+  // that's silent right now is the most urgent fact, regardless of a good track record),
+  // 30% historical uptime, with small penalties for a worsening latency trend or a blown
+  // 30-day budget. Exists so a list of many stations can be triaged at a glance instead of
+  // read one card at a time. Returns null when there isn't enough information yet, rather
+  // than guessing.
+  function healthScore(site){
+    if (isInMaintenance(site)) return null; // don't rank/triage what's intentionally offline
+    var verdict = site.checking ? 'checking' : (site.lastVerdict || 'unknown');
+    if (verdict === 'unknown' || verdict === 'checking') return null;
+    var history = state.history[site.id] || [];
+    var uptime = uptimePercent(history);
+    var base = verdict === 'up' ? 100 : (verdict === 'timeout' ? 55 : 0);
+    var uptimeComponent = uptime != null ? uptime : base;
+    var score = Math.round(base * 0.7 + uptimeComponent * 0.3);
+    if (latencyTrend(history) === 'slower') score -= 5;
+    var budget = errorBudget(site);
+    if (budget && budget.remainingMs < 0) score -= 10;
+    return Math.max(0, Math.min(100, score));
+  }
+
+  // Has this station historically gone quiet around this same hour before? Purely
+  // descriptive — a maintenance window looks very different from a genuine surprise.
+  function recurringPatternNote(history, atTimestamp){
+    if (history.length < 15) return null;
+    var hour = new Date(atTimestamp).getHours();
+    var sameHour = history.filter(function(h){ return new Date(h.timestamp).getHours() === hour; });
+    if (sameHour.length < 4) return null;
+    var trouble = sameHour.filter(function(h){ return h.verdict !== 'up'; }).length;
+    if (trouble / sameHour.length >= 0.4) return 'often quiet around this hour (' + trouble + '/' + sameHour.length + ' past checks)';
+    return null;
+  }
+
+  // If most stations go quiet in the same batch, the likelier explanation is this end
+  // of the line — the network, DNS, or the browser — not every site failing at once.
+  // The canary turns that from a guess into evidence: if it's also unreachable, connectivity
+  // really is the problem; if it answered fine, the trouble is more likely real. Stations
+  // in a planned maintenance window are excluded from both sides of the ratio.
+  function computeCorrelation(){
+    var live = state.sites.filter(function(s){ return !isInMaintenance(s); });
+    var total = live.length;
+    if (total < 3) return null;
+    var trouble = live.filter(function(s){ return s.lastVerdict === 'down' || s.lastVerdict === 'timeout'; }).length;
+    if ((trouble / total) < 0.6) return null;
+    var confidence = 'unconfirmed';
+    if (state.canary) confidence = state.canary.healthy ? 'unlikely' : 'confirmed';
+    return { trouble: trouble, total: total, confidence: confidence };
+  }
+
+  // Based on how long this station's past outages typically lasted — a light, honestly-
+  // labeled estimate, not a promise.
+  function predictRecovery(site){
+    var closed = (site.episodes || []).filter(function(ep){ return ep.endedAt != null; });
+    if (closed.length < 2) return null;
+    var durations = closed.slice(-10).map(function(ep){ return ep.endedAt - ep.startedAt; });
+    return { avgMs: durations.reduce(function(a,d){ return a+d; }, 0) / durations.length, sampleSize: durations.length };
+  }
+
+  // Time-weighted uptime over a real window (durations of actual outages, not a ratio of
+  // sampled checks) — bounded by when the station was actually added, since we can't claim
+  // uptime for time before OUTPOST was watching. Time spent in a maintenance window is
+  // removed from the denominator entirely, so planned work never dents the budget.
+  function timeWeightedStats(site, windowMs){
+    var now = Date.now();
+    var windowStart = now - windowMs;
+    var monitorStart = Math.max(site.addedAt || windowStart, windowStart);
+    var monitoredMs = now - monitorStart;
+    if (monitoredMs <= 0) return null;
+    var downMs = 0;
+    (site.episodes || []).forEach(function(ep){
+      var s = Math.max(ep.startedAt, windowStart);
+      var e = Math.min(ep.endedAt || now, now);
+      if (e > s) downMs += (e - s);
+    });
+    var maintenanceMs = 0;
+    (site.maintenanceLog || []).forEach(function(m){
+      var s = Math.max(m.start, windowStart);
+      var e = Math.min(m.end || now, now);
+      if (e > s) maintenanceMs += (e - s);
+    });
+    monitoredMs = Math.max(0, monitoredMs - maintenanceMs);
+    if (monitoredMs <= 0) return null;
+    downMs = Math.min(downMs, monitoredMs);
+    return { monitoredMs: monitoredMs, downMs: downMs, pct: ((monitoredMs - downMs) / monitoredMs) * 100 };
+  }
+
+  var BUDGET_WINDOW_MS = 30 * 24 * 60 * 60 * 1000;
+
+  function errorBudget(site){
+    var stats = timeWeightedStats(site, BUDGET_WINDOW_MS);
+    if (!stats || stats.monitoredMs < 24 * 60 * 60 * 1000) return null; // need at least a day watched
+    var target = state.settings.targetUptimePct || 99.5;
+    var allowedDownMs = stats.monitoredMs * (1 - target / 100);
+    return { remainingMs: allowedDownMs - stats.downMs, usedDownMs: stats.downMs, allowedDownMs: allowedDownMs, pct: stats.pct };
+  }
+
+  // 24h and 7d, time-weighted (actual outage duration within the window, not a ratio of
+  // sampled checks) -- the figures competitors lead with, rather than the coarser
+  // all-time check-sampled uptimePercent(). Needs at least an hour watched before showing
+  // anything, so "just added" doesn't render as a misleadingly precise 100%.
+  function uptimeWindows(site){
+    var day = timeWeightedStats(site, 24 * 60 * 60 * 1000);
+    var week = timeWeightedStats(site, 7 * 24 * 60 * 60 * 1000);
+    var minMs = 60 * 60 * 1000;
+    return {
+      day: (day && day.monitoredMs >= minMs) ? day.pct : null,
+      week: (week && week.monitoredMs >= minMs) ? week.pct : null
+    };
+  }
+
+  // Free side-effect of already resolving DNS for every station: if two stations resolve
+  // to the exact same address, they're very likely the same underlying server or the same
+  // reverse proxy in front of both — worth knowing before assuming two outages are
+  // unrelated. No new dependency, just reusing data already being fetched.
+  function detectSharedInfrastructure(){
+    var byIp = {};
+    state.sites.forEach(function(s){
+      if (!s.lastIp) return;
+      (byIp[s.lastIp] = byIp[s.lastIp] || []).push(s);
+    });
+    return Object.keys(byIp).map(function(ip){ return byIp[ip]; }).filter(function(g){ return g.length > 1; });
+  }
+
+  // Reconstructs what happened between the last session and this one, purely from
+  // episode data already being recorded — no separate "snapshot" mechanism needed.
+  // Read once, right after loading state and before this session's own checks can start
+  // advancing lastActiveAt, or every reload would show an empty gap.
+  function buildAwaySummary(){
+    var lastActive = state.lastActiveAt;
+    if (!lastActive) return null;
+    var awayMs = Date.now() - lastActive;
+    if (awayMs < 10 * 60 * 1000) return null; // not away long enough to be worth a digest
+    var events = [];
+    state.sites.forEach(function(site){
+      (site.episodes || []).forEach(function(ep){
+        if (ep.startedAt > lastActive) events.push({ site: site.name, startedAt: ep.startedAt, endedAt: ep.endedAt });
+      });
+    });
+    if (!events.length) return null;
+    events.sort(function(a, b){ return a.startedAt - b.startedAt; });
+    var overflow = Math.max(0, events.length - 12);
+    return { awayMs: awayMs, events: events.slice(-12), overflow: overflow };
+  }
+
+  // Native Web Crypto, no library. Requires a secure context (https:// or localhost) —
+  // gracefully returns null under file:// or plain http://, and callers treat that as
+  // "no hash available" rather than an error.
+  function sha256Hex(text){
+    if (!(window.crypto && crypto.subtle && crypto.subtle.digest)) return Promise.resolve(null);
+    try {
+      var data = new TextEncoder().encode(text);
+      return crypto.subtle.digest('SHA-256', data).then(function(buf){
+        return Array.prototype.map.call(new Uint8Array(buf), function(b){ return b.toString(16).padStart(2, '0'); }).join('');
+      }).catch(function(){ return null; });
+    } catch(e) { return Promise.resolve(null); }
+  }
+
+  function copyIncidentReport(site, episode){
+    var duration = formatDuration((episode.endedAt || Date.now()) - episode.startedAt);
+    var text = 'OUTPOST incident report\n' +
+      'Station: ' + site.name + ' (' + site.url + ')\n' +
+      'Silent from ' + new Date(episode.startedAt).toLocaleString() + ' to ' +
+      (episode.endedAt ? new Date(episode.endedAt).toLocaleString() : 'ongoing') + '\n' +
+      'Duration: ' + duration +
+      (episode.note ? '\nWhat happened: ' + episode.note : '');
+    sha256Hex(text).then(function(hash){
+      var finalText = text + (hash ? '\nSHA-256: ' + hash : '');
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(finalText)
+          .then(function(){ showToast(hash ? 'Incident report copied, with integrity hash' : 'Incident report copied', 'success'); })
+          .catch(function(){ showToast('Clipboard access was blocked', 'danger'); });
+      } else {
+        showToast('Clipboard unavailable in this browser', 'danger');
+      }
+    });
+  }
+
+  // One click to a pre-filled email — works for an outage that's still ongoing, not just
+  // resolved ones, since that's when escalating is actually urgent. Recipient is left
+  // blank on purpose: OUTPOST shouldn't guess who the right person is this time.
+  function emailIncident(site, episode){
+    var duration = formatDuration((episode.endedAt || Date.now()) - episode.startedAt);
+    var subject = 'OUTPOST alert \u2014 ' + site.name + (episode.endedAt ? ' was down' : ' is down');
+    var notes = site.notes && site.notes.trim() ? site.notes.trim() : '';
+    if (notes.length > 500) notes = notes.slice(0, 500) + '\u2026 [truncated \u2014 see OUTPOST for the full note]';
+    var body = site.name + ' (' + site.url + ') ' + (episode.endedAt ? 'was silent' : 'is currently silent') +
+      ' from ' + new Date(episode.startedAt).toLocaleString() +
+      (episode.endedAt ? ' to ' + new Date(episode.endedAt).toLocaleString() : ', still ongoing') +
+      '. Duration: ' + duration + '.' +
+      (episode.note ? '\n\nWhat happened: ' + episode.note : '') +
+      (notes ? '\n\nRunbook notes:\n' + notes : '');
+    var a = document.createElement('a');
+    a.href = 'mailto:?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
+    a.click();
+  }
+
+  function renderTrace(history){
+    var w = 280, h = 46, base = h / 2;
+    var recent = history.slice(-50);
+    if (!recent.length) {
+      return '<svg class="trace" viewBox="0 0 ' + w + ' ' + h + '" preserveAspectRatio="none">' +
+        '<line x1="0" y1="' + base + '" x2="' + w + '" y2="' + base + '" stroke="var(--line)" stroke-width="1" stroke-dasharray="3,4"/>' +
+        '<text x="' + (w/2) + '" y="' + (base+4) + '" text-anchor="middle" class="trace-empty">no readings yet</text></svg>';
+    }
+    var n = recent.length;
+    var step = n > 1 ? w / (n - 1) : 0;
+    var points = recent.map(function(entry, i){
+      var jitter = Math.sin(i * 0.9) * 1.4;
+      var y = base + jitter;
+      if (entry.verdict === 'down') y = base + 16 + jitter * 0.3;
+      else if (entry.verdict === 'timeout') y = base + 8 + jitter * 0.5;
+      var x = n > 1 ? i * step : w / 2;
+      return { x:x, y:y, verdict: entry.verdict, entry: entry };
+    });
+    var segments = '';
+    for (var i = 1; i < points.length; i++) {
+      var a = points[i-1], b = points[i];
+      var color = b.verdict === 'down' ? 'var(--signal-lost)' : (b.verdict === 'timeout' ? 'var(--signal-faint)' : 'var(--ash)');
+      segments += '<line x1="' + a.x.toFixed(1) + '" y1="' + a.y.toFixed(1) + '" x2="' + b.x.toFixed(1) + '" y2="' + b.y.toFixed(1) + '" stroke="' + color + '" stroke-width="1.6" stroke-linecap="round"/>';
+    }
+    var dots = points.map(function(p){
+      if (p.verdict === 'up') return '';
+      var color = p.verdict === 'down' ? 'var(--signal-lost)' : 'var(--signal-faint)';
+      var t = new Date(p.entry.timestamp).toLocaleString();
+      return '<circle cx="' + p.x.toFixed(1) + '" cy="' + p.y.toFixed(1) + '" r="2.4" fill="' + color + '"><title>' + escapeHtml(t + ' \u2014 ' + VERDICT_LABEL[p.verdict] + ' \u2014 ' + (p.entry.latency != null ? p.entry.latency + 'ms' : '')) + '</title></circle>';
+    }).join('');
+    return '<svg class="trace" viewBox="0 0 ' + w + ' ' + h + '" preserveAspectRatio="none">' + segments + dots + '</svg>';
+  }
+
+  function renderLog(history){
+    if (!history.length) return '';
+    var rows = history.slice(-100).slice().reverse().map(function(h){
+      var cls = h.verdict === 'up' ? 'lg-up' : (h.verdict === 'down' ? 'lg-down' : 'lg-timeout');
+      return '<tr><td>' + new Date(h.timestamp).toLocaleString() + '</td><td class="' + cls + '">' + VERDICT_LABEL[h.verdict] + '</td><td>' + (h.latency != null ? h.latency + ' ms' : '\u2014') + '</td></tr>';
+    }).join('');
+    return '<details class="station-log"><summary>Every raw reading (' + history.length + ')</summary>' +
+      '<div class="log-scroll"><table>' + rows + '</table></div></details>';
+  }
+
+  function renderSignals(signals){
+    if (!signals) return '';
+    function chip(label, val){
+      var cls = val === true ? 'sig-hit' : (val === false ? 'sig-miss' : 'sig-na');
+      var title = label + (val === true ? ': answered' : val === false ? ': no answer' : ': not checked');
+      return '<span class="sig ' + cls + '" title="' + title + '">' + label + '</span>';
+    }
+    var fetchHit = signals.fetch === 'reachable' ? true : (signals.fetch === 'unreachable' ? false : null);
+    var imageHit = signals.image === 'reachable' ? true : (signals.image === 'unreachable' ? false : null);
+    var dnsHit = signals.dns === 'resolved' ? true : (signals.dns === 'nxdomain' ? false : null);
+    return '<span class="signals">' + chip('DNS', dnsHit) + chip('HTTP', fetchHit) + chip('ICO', imageHit) + '</span>';
+  }
+
+  function renderEpisodes(site){
+    var episodes = site.episodes || [];
+    if (!episodes.length) return '';
+    var recent = episodes.slice(-6).slice().reverse();
+    var rows = recent.map(function(ep){
+      var ongoing = ep.endedAt == null;
+      var duration = ongoing ? (Date.now() - ep.startedAt) : (ep.endedAt - ep.startedAt);
+      var range = new Date(ep.startedAt).toLocaleString() + (ongoing ? ' \u2014 ongoing' : ' \u2014 ' + new Date(ep.endedAt).toLocaleTimeString());
+      var idx = site.episodes.indexOf(ep);
+      var reportBtn = ongoing ? '' : '<button class="mini-btn" data-action="report" data-ep="' + idx + '">copy report</button>';
+      var emailBtn = '<button class="mini-btn" data-action="email" data-ep="' + idx + '">email</button>';
+      var noteBtn = '<button class="mini-btn" data-action="epnote" data-ep="' + idx + '">' + (ep.note ? 'edit note' : '+ note') + '</button>';
+      var ackBtn = (ongoing && (state.settings.reminderMs || 0) > 0 && !site.reminderAcked)
+        ? '<button class="mini-btn" data-action="ack" title="Stop repeating reminders for this outage specifically">acknowledge</button>' : '';
+      var prediction = '';
+      if (ongoing) {
+        var pred = predictRecovery(site);
+        if (pred) prediction = ' <span class="predict-note" title="Average of the last ' + pred.sampleSize + ' resolved outages for this station">(typically back within ' + formatDuration(pred.avgMs) + ')</span>';
+      }
+      var noteHtml = ep.note ? '<div class="ep-note">\u201C' + escapeHtml(ep.note) + '\u201D</div>' : '';
+      var ackedHtml = (ongoing && site.reminderAcked) ? '<div class="ep-note ep-acked">Acknowledged \u2014 reminders paused for this outage</div>' : '';
+      return '<div class="episode' + (ongoing ? ' ep-ongoing' : '') + '">' +
+        '<div class="episode-main"><span>' + range + prediction + '</span><span class="ep-duration">' + formatDuration(duration) + '</span>' +
+        '<span class="episode-actions">' + reportBtn + emailBtn + noteBtn + ackBtn + '</span></div>' +
+        noteHtml + ackedHtml +
+      '</div>';
+    }).join('');
+    return '<div class="episodes"><div class="episodes-label">Outages (' + episodes.length + ')</div>' + rows + '</div>';
+  }
+
+  // A place for the person's own knowledge — who to call, what to restart — attached to
+  // the station and surfaced automatically right when it would matter, open by default
+  // once the station goes quiet and there's something written there.
+  function renderNotes(site){
+    var hasNotes = !!(site.notes && site.notes.trim());
+    var openAttr = (hasNotes && site.lastVerdict !== 'up') ? ' open' : '';
+    return '<details class="station-notes"' + openAttr + '><summary>' + (hasNotes ? 'Runbook notes' : 'Add runbook notes') + '</summary>' +
+      '<textarea class="notes-input" data-site-id="' + site.id + '" placeholder="What to do when this goes quiet \u2014 who to call, what to restart, where the logs are\u2026">' + escapeHtml(site.notes || '') + '</textarea></details>';
+  }
+
+  function renderCategoryControl(site){
+    var known = getKnownCategories();
+    var current = site.category || '';
+    var options = '<option value="">Uncategorized</option>' +
+      known.map(function(c){ return '<option value="' + escapeHtml(c) + '"' + (c === current ? ' selected' : '') + '>' + escapeHtml(c) + '</option>'; }).join('') +
+      '<option value="__new__">+ New category\u2026</option>';
+    return '<select class="category-select" data-site-id="' + site.id + '" title="Category" aria-label="Category for ' + escapeHtml(site.name) + '">' + options + '</select>';
+  }
+
+  function renderSubcategoryControl(site){
+    if (!site.category) return '';
+    var known = getKnownSubcategories();
+    var current = site.subcategory || '';
+    var options = '<option value="">No subcategory</option>' +
+      known.map(function(c){ return '<option value="' + escapeHtml(c) + '"' + (c === current ? ' selected' : '') + '>' + escapeHtml(c) + '</option>'; }).join('') +
+      '<option value="__new__">+ New subcategory\u2026</option>';
+    return '<select class="subcategory-select" data-site-id="' + site.id + '" title="Subcategory" aria-label="Subcategory for ' + escapeHtml(site.name) + '">' + options + '</select>';
+  }
+
+  function renderMaintenanceControl(site){
+    if (isInMaintenance(site)) {
+      var until = site.maintenanceUntil;
+      var untilText = until > Date.now() + 50 * 365 * 24 * 60 * 60 * 1000 ? 'until you end it' : ('until ' + new Date(until).toLocaleTimeString());
+      return '<div class="maint-active">\uD83D\uDD27 In maintenance ' + untilText + ' <button class="mini-btn" data-action="endmaint" aria-label="End maintenance for ' + escapeHtml(site.name) + '">end now</button></div>';
+    }
+    return '<select class="maint-select" data-site-id="' + site.id + '" title="Schedule maintenance" aria-label="Schedule maintenance for ' + escapeHtml(site.name) + '">' +
+      '<option value="">Schedule maintenance\u2026</option>' +
+      '<option value="30">30 min</option><option value="60">1 hour</option><option value="120">2 hours</option><option value="240">4 hours</option><option value="manual">Until I end it</option>' +
+      '</select>';
+  }
+
+  function renderStation(site){
+    var history = state.history[site.id] || [];
+    var inMaintenance = isInMaintenance(site);
+    var verdict = site.checking ? 'checking' : (inMaintenance ? 'maintenance' : (site.lastVerdict || 'unknown'));
+    var uptime = uptimePercent(history);
+    var trend = latencyTrend(history);
+    var trendHtml = trend === 'slower' ? ' <span class="trend trend-up" title="Latency trending up">\u2197</span>' :
+                    (trend === 'faster' ? ' <span class="trend trend-down" title="Latency trending down">\u2198</span>' : '');
+    var causeHtml = (!site.checking && !inMaintenance && site.lastCause) ? '<div class="cause-note">' + escapeHtml(site.lastCause) + '</div>' : '';
+    var pattern = (!site.checking && !inMaintenance && verdict !== 'up') ? recurringPatternNote(history, site.lastCheckedAt || Date.now()) : null;
+    var patternHtml = pattern ? '<div class="pattern-note">' + escapeHtml(pattern) + '</div>' : '';
+    var windows = uptimeWindows(site);
+    var uptimeTitle = windows.day != null
+      ? 'Time-weighted (actual downtime duration, not a ratio of sampled checks).' + (windows.week != null ? ' 7d: ' + windows.week.toFixed(1) + '%.' : ' Under a week of data so far.')
+      : 'Ratio of sampled checks that answered \u2014 not yet enough elapsed time for a time-weighted 24h figure.';
+    var uptimeVal = windows.day != null ? windows.day.toFixed(1) + '%' : (uptime != null ? uptime + '%' : '\u2014');
+    var budget = errorBudget(site);
+    var budgetHtml = '';
+    if (budget) {
+      var over = budget.remainingMs < 0;
+      budgetHtml = '<div class="stat" title="Time-weighted, last 30 days, against a ' + (state.settings.targetUptimePct || 99.5) + '% target"><span class="stat-label">30d budget</span><span class="stat-val ' + (over ? 'budget-over' : 'budget-ok') + '">' + (over ? '\u2212' : '+') + formatDuration(Math.abs(budget.remainingMs)) + '</span></div>';
+    }
+    var health = healthScore(site);
+    var healthHtml = health == null ? '' :
+      '<div class="stat" title="70% current status, 30% historical uptime, penalties for a worsening trend or a blown budget"><span class="stat-label">Health</span><span class="stat-val ' + (health >= 85 ? 'health-good' : health >= 50 ? 'health-mid' : 'health-bad') + '">' + health + '</span></div>';
+    return '<div class="station v-' + verdict + '" data-site-id="' + site.id + '">' +
+      '<div class="station-row">' +
+        '<span class="station-label v-' + verdict + '"><span class="dot"></span>' + VERDICT_LABEL[verdict] + '</span>' +
+        renderSignals(site.lastSignals) +
+        '<div class="station-info">' +
+          '<div class="station-name">' + escapeHtml(site.name) + '</div>' +
+          '<div class="station-url"><a href="' + escapeHtml(site.url) + '" target="_blank" rel="noopener noreferrer" title="Open in a new tab">' + escapeHtml(site.url) + '</a></div>' +
+        '</div>' +
+        '<div class="station-stats">' +
+          healthHtml +
+          '<div class="stat"><span class="stat-label">Latency</span><span class="stat-val">' + (site.lastLatency != null ? site.lastLatency + ' ms' : '\u2014') + trendHtml + '</span></div>' +
+          '<div class="stat" title="' + escapeHtml(uptimeTitle) + '"><span class="stat-label">' + (windows.day != null ? '24h' : 'Contact') + '</span><span class="stat-val">' + uptimeVal + '</span></div>' +
+          '<div class="stat"><span class="stat-label">Last check</span><span class="stat-val">' + timeAgo(site.lastCheckedAt) + '</span></div>' +
+          budgetHtml +
+        '</div>' +
+        '<div class="station-actions">' +
+          renderCategoryControl(site) +
+          '<button class="icon-btn" data-action="check" ' + (site.checking ? 'disabled' : '') + ' aria-label="Check ' + escapeHtml(site.name) + ' now" title="Check now">\u21BB</button>' +
+          '<button class="icon-btn" data-action="remove" aria-label="Remove ' + escapeHtml(site.name) + '" title="Remove">\u2715</button>' +
+        '</div>' +
+      '</div>' +
+      '<div class="maint-row">' + renderSubcategoryControl(site) + renderMaintenanceControl(site) + '<button class="mini-btn badge-btn" data-action="badge" aria-label="Download status badge for ' + escapeHtml(site.name) + '">svg badge</button></div>' +
+      causeHtml + patternHtml +
+      '<div class="trace-wrap">' + renderTrace(history) + '</div>' +
+      renderEpisodes(site) +
+      renderNotes(site) +
+      renderLog(history) +
+    '</div>';
+  }
+
+  function renderLogLine(){
+    var total = state.sites.length;
+    if (total === 0) { $('#logLine').textContent = 'no stations logged yet'; return; }
+    var up = state.sites.filter(function(s){ return s.lastVerdict === 'up'; }).length;
+    var down = state.sites.filter(function(s){ return s.lastVerdict === 'down'; }).length;
+    var other = total - up - down;
+    var html = '<b>' + total + '</b> station' + (total === 1 ? '' : 's') + ' \u2014 ' +
+      '<span class="lv-up">' + up + ' contact</span> \u00b7 ' +
+      '<span class="lv-down">' + down + ' silent</span> \u00b7 ' +
+      '<span class="lv-faint">' + other + ' faint</span>';
+    if (state.lastFullCheckAt) html += ' \u2014 last listen ' + timeAgo(state.lastFullCheckAt);
+    $('#logLine').innerHTML = html;
+  }
+
+  function renderInfraNote(){
+    var el = $('#infraNote');
+    var groups = detectSharedInfrastructure();
+    if (!groups.length) { el.style.display = 'none'; return; }
+    el.style.display = '';
+    el.textContent = '\u2139 Same address behind: ' + groups.map(function(g){
+      return g.map(function(s){ return s.name; }).join(' + ');
+    }).join('; ') + ' \u2014 likely shared hosting, so trouble on one may mean trouble on the other too.';
+  }
+
+  function refreshCategoryOptions(){
+    var known = getKnownCategories();
+    $('#categoryOptions').innerHTML = known.map(function(c){ return '<option value="' + escapeHtml(c) + '">'; }).join('');
+    var knownSubs = getKnownSubcategories();
+    $('#subcategoryOptions').innerHTML = knownSubs.map(function(c){ return '<option value="' + escapeHtml(c) + '">'; }).join('');
+    var knownServers = getKnownServers();
+    $('#serverOptions').innerHTML = knownServers.map(function(c){ return '<option value="' + escapeHtml(c) + '">'; }).join('');
+    var sel = $('#categoryFilterSelect');
+    var current = state.settings.categoryFilter || 'all';
+    var usedCats = {};
+    state.sites.forEach(function(s){ if (s.category) usedCats[s.category] = true; });
+    var hasUncategorized = state.sites.some(function(s){ return !s.category; });
+    var options = '<option value="all">All categories</option>' +
+      Object.keys(usedCats).sort().map(function(c){ return '<option value="' + escapeHtml(c) + '">' + escapeHtml(c) + '</option>'; }).join('') +
+      (hasUncategorized ? '<option value="__uncategorized__">Uncategorized</option>' : '');
+    sel.innerHTML = options;
+    var hasCurrentOption = Array.prototype.some.call(sel.options, function(o){ return o.value === current; });
+    sel.value = hasCurrentOption ? current : 'all';
+    if (!hasCurrentOption && state.settings.categoryFilter !== 'all') {
+      // The category this was filtered to no longer exists (renamed/last site moved or
+      // removed) — fix the persisted setting too, so the select and the actual filter
+      // never silently disagree with each other.
+      state.settings.categoryFilter = 'all';
+      saveState();
+    }
+  }
+
+  // Ambient awareness for a backgrounded tab: the title and favicon carry a trouble
+  // count, so a glance at the tab bar is enough without switching to this tab. Canvas
+  // is wrapped defensively — real browsers always have it, but this must never be the
+  // thing that breaks rendering if some restricted context lacks it.
+  var BASE_TITLE = 'OUTPOST \u2014 a listening post for your websites';
+  function updateTabIndicator(){
+    var down = state.sites.filter(function(s){ return s.lastVerdict === 'down'; }).length;
+    document.title = (down > 0 ? '(' + down + ') ' : '') + BASE_TITLE;
+    try {
+      var canvas = document.createElement('canvas');
+      canvas.width = 40; canvas.height = 40;
+      var ctx = canvas.getContext('2d');
+      if (!ctx) return;
+      ctx.fillStyle = '#17130f'; ctx.fillRect(0, 0, 40, 40);
+      ctx.strokeStyle = down > 0 ? '#d4704a' : '#c69544';
+      ctx.lineWidth = 2.4; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+      ctx.beginPath();
+      ctx.moveTo(5, 20); ctx.lineTo(14, 20); ctx.lineTo(18, 10); ctx.lineTo(22, 30); ctx.lineTo(26, 20); ctx.lineTo(35, 20);
+      ctx.stroke();
+      if (down > 0) {
+        ctx.fillStyle = '#d4704a';
+        ctx.beginPath(); ctx.arc(32, 9, 7, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#17130f'; ctx.font = 'bold 10px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillText(String(Math.min(down, 9)), 32, 9.5);
+      }
+      var link = document.querySelector('link[rel="icon"]');
+      if (link) link.href = canvas.toDataURL('image/png');
+    } catch(e) { /* canvas unsupported in this context — title above still carries the signal */ }
+  }
+
+  var editingNotesId = null;
+
+  // Worst health first by default — the ordering that matches how you'd actually triage
+  // a list once there are enough stations that eyeballing a flat list stops working.
+  function getSortedFilteredSites(){
+    var sites = state.sites.slice();
+    if (state.settings.listFilter === 'trouble') {
+      sites = sites.filter(function(s){ return s.lastVerdict === 'down' || s.lastVerdict === 'timeout'; });
+    }
+    var catFilter = state.settings.categoryFilter || 'all';
+    if (catFilter === '__uncategorized__') {
+      sites = sites.filter(function(s){ return !s.category; });
+    } else if (catFilter !== 'all') {
+      sites = sites.filter(function(s){ return s.category === catFilter; });
+    }
+    var by = state.settings.listSort || 'health';
+    if (by === 'health') {
+      // Decorate-sort-undecorate: healthScore does real work (scans each site's full
+      // history) so it must be computed once per site, not once per comparison — a plain
+      // sort(a,b) comparator would call it O(N log N) times instead of O(N).
+      var scored = sites.map(function(s){ return { site: s, score: healthScore(s) }; });
+      scored.sort(function(a, b){
+        if (a.score == null && b.score == null) return 0;
+        if (a.score == null) return 1;
+        if (b.score == null) return -1;
+        return a.score - b.score;
+      });
+      return scored.map(function(x){ return x.site; });
+    }
+    sites.sort(function(a, b){
+      if (by === 'latency') {
+        var la = a.lastLatency == null ? Infinity : a.lastLatency;
+        var lb = b.lastLatency == null ? Infinity : b.lastLatency;
+        return lb - la;
+      }
+      if (by === 'name') return a.name.localeCompare(b.name);
+      if (by === 'added') return (b.addedAt || 0) - (a.addedAt || 0);
+      return 0;
+    });
+    return sites;
+  }
+
+  // Categories become collapsible sections, alphabetical, with Uncategorized always last
+  // since it's the residual bucket rather than a real grouping choice.
+  function groupByCategory(sites){
+    var buckets = {}, order = [];
+    sites.forEach(function(s){
+      var cat = (s.category || '').trim();
+      if (!buckets[cat]) { buckets[cat] = []; order.push(cat); }
+      buckets[cat].push(s);
+    });
+    order.sort(function(a, b){
+      if (a === '') return 1;
+      if (b === '') return -1;
+      return a.localeCompare(b);
+    });
+    return order.map(function(cat){ return { category: cat, sites: buckets[cat] }; });
+  }
+
+  // Within one category, split further by subcategory where any exist. A category with
+  // no subcategorized sites at all returns a single '' bucket, which the caller renders
+  // flat rather than wrapping in a pointless single sub-section.
+  function groupBySubcategory(sites){
+    var buckets = {}, order = [];
+    sites.forEach(function(s){
+      var sub = (s.subcategory || '').trim();
+      if (!buckets[sub]) { buckets[sub] = []; order.push(sub); }
+      buckets[sub].push(s);
+    });
+    order.sort(function(a, b){
+      if (a === '') return 1;
+      if (b === '') return -1;
+      return a.localeCompare(b);
+    });
+    return order.map(function(sub){ return { subcategory: sub, sites: buckets[sub] }; });
+  }
+
+  // A separate axis from category/subcategory -- which physical/logical server hosts a
+  // station, rather than which project it belongs to. Deliberately flat (no further
+  // nesting under each server) rather than crossed with category, since "what's on this
+  // box" is usually the whole question when this view gets used.
+  function groupByServer(sites){
+    var buckets = {}, order = [];
+    sites.forEach(function(s){
+      var srv = (s.server || '').trim();
+      if (!buckets[srv]) { buckets[srv] = []; order.push(srv); }
+      buckets[srv].push(s);
+    });
+    order.sort(function(a, b){
+      if (a === '') return 1;
+      if (b === '') return -1;
+      return a.localeCompare(b);
+    });
+    return order.map(function(srv){ return { server: srv, sites: buckets[srv] }; });
+  }
+
+  function render(){
+    renderLogLine();
+    updateTabIndicator();
+    var corr = computeCorrelation();
+    var banner = $('#correlationBanner');
+    if (corr) {
+      banner.style.display = '';
+      var text = '\u26A0 ' + corr.trouble + ' of ' + corr.total + ' stations gone quiet at once. ';
+      if (corr.confidence === 'confirmed') text += 'The canary check can\u2019t reach Google or Cloudflare either right now \u2014 this really does look like the connection here, not the stations.';
+      else if (corr.confidence === 'unlikely') text += 'But the canary check just reached Google and Cloudflare fine, so this is more likely a real, if coincidental, issue with those stations than something on this end.';
+      else text += 'Often means the problem is here (your connection, DNS, or browser) rather than every station failing at once.';
+      banner.textContent = text;
+    } else {
+      banner.style.display = 'none';
+    }
+    renderInfraNote();
+    refreshCategoryOptions();
+    var listEl = $('#siteList');
+    if (state.sites.length === 0) {
+      listEl.innerHTML = '<div class="empty">No stations logged yet. Add a site above and OUTPOST will start listening.<br><br><button class="btn-quiet" data-action="load-examples">Add 3 example stations</button></div>';
+      return;
+    }
+    // Don't blow away an in-progress runbook edit just because a check completed elsewhere.
+    if (editingNotesId) return;
+
+    var sitesToShow = getSortedFilteredSites();
+    if (sitesToShow.length === 0) {
+      listEl.innerHTML = '<div class="empty">Nothing matches this filter right now.</div>';
+      return;
+    }
+
+    // Rebuilding the list wholesale would otherwise snap every open <details> shut —
+    // remember which ones (stations, categories, and subcategories alike) were open and
+    // restore them after.
+    var openLogs = {}, openNotes = {}, closedCats = {}, closedSubs = {};
+    listEl.querySelectorAll('.station').forEach(function(card){
+      var id = card.getAttribute('data-site-id');
+      var log = card.querySelector('.station-log');
+      var notes = card.querySelector('.station-notes');
+      if (log && log.open) openLogs[id] = true;
+      if (notes && notes.open) openNotes[id] = true;
+    });
+    listEl.querySelectorAll('.category-group').forEach(function(group){
+      if (!group.open) closedCats[group.getAttribute('data-category')] = true;
+    });
+    listEl.querySelectorAll('.subcategory-group').forEach(function(group){
+      if (!group.open) closedSubs[group.getAttribute('data-subcategory')] = true;
+    });
+
+    var groupMode = state.settings.groupBy || 'category';
+    var groupsHtml;
+    if (groupMode === 'server') {
+      var serverGroups = groupByServer(sitesToShow);
+      groupsHtml = serverGroups.map(function(g){
+        var label = g.server || 'Unknown server';
+        var openAttr = closedCats[g.server] ? '' : ' open';
+        return '<details class="category-group" data-category="' + escapeHtml(g.server) + '"' + openAttr + '>' +
+          '<summary>' + escapeHtml(label) + ' <span class="cat-count">(' + g.sites.length + ')</span></summary>' +
+          '<div class="category-sites">' + g.sites.map(renderStation).join('') + '</div>' +
+        '</details>';
+      }).join('');
+    } else {
+      var groups = groupByCategory(sitesToShow);
+      groupsHtml = groups.map(function(g){
+        var label = g.category || 'Uncategorized';
+        var openAttr = closedCats[g.category] ? '' : ' open';
+        var subGroups = groupBySubcategory(g.sites);
+        var innerHtml;
+        if (subGroups.length === 1 && subGroups[0].subcategory === '') {
+          // nothing in this category is subcategorized -- render stations flat, same as before
+          innerHtml = g.sites.map(renderStation).join('');
+        } else {
+          innerHtml = subGroups.map(function(sg){
+            if (sg.subcategory === '') {
+              // a few sites in this category have no subcategory even though others do --
+              // show them flat, not wrapped in an empty-looking "Uncategorized" sub-section
+              return sg.sites.map(renderStation).join('');
+            }
+            var subKey = g.category + '/' + sg.subcategory;
+            var subOpenAttr = closedSubs[subKey] ? '' : ' open';
+            return '<details class="subcategory-group" data-subcategory="' + escapeHtml(subKey) + '"' + subOpenAttr + '>' +
+              '<summary>' + escapeHtml(sg.subcategory) + ' <span class="cat-count">(' + sg.sites.length + ')</span></summary>' +
+              '<div class="category-sites">' + sg.sites.map(renderStation).join('') + '</div>' +
+            '</details>';
+          }).join('');
+        }
+        return '<details class="category-group" data-category="' + escapeHtml(g.category) + '"' + openAttr + '>' +
+          '<summary>' + escapeHtml(label) + ' <span class="cat-count">(' + g.sites.length + ')</span></summary>' +
+          '<div class="category-sites">' + innerHtml + '</div>' +
+        '</details>';
+      }).join('');
+    }
+    listEl.innerHTML = groupsHtml;
+
+    listEl.querySelectorAll('.station').forEach(function(card){
+      var id = card.getAttribute('data-site-id');
+      var log = card.querySelector('.station-log');
+      var notes = card.querySelector('.station-notes');
+      if (log && openLogs[id]) log.open = true;
+      if (notes && openNotes[id]) notes.open = true;
+    });
+  }
+
+  // ---------------- Toast ----------------
+
+  function showToast(message, type){
+    var container = $('#toastContainer');
+    var el = document.createElement('div');
+    el.className = 'toast toast-' + (type || 'info');
+    el.textContent = message;
+    container.appendChild(el);
+    requestAnimationFrame(function(){ el.classList.add('show'); });
+    setTimeout(function(){
+      el.classList.remove('show');
+      setTimeout(function(){ el.remove(); }, 300);
+    }, 3200);
+  }
+
+  // ---------------- Export / Import ----------------
+
+  function exportData(){
+    var blob = new Blob([JSON.stringify(state, null, 2)], { type:'application/json' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = 'outpost-log-' + new Date().toISOString().slice(0,10) + '.json';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    showToast('Log exported', 'success');
+  }
+
+  // A separate, static, read-only snapshot — not this app, just a page. No JS, no
+  // storage, no live checking: a point-in-time picture of the watchlist that can be
+  // uploaded anywhere (a status.* subdomain, an internal wiki, wherever) to show others
+  // what OUTPOST last saw, without handing them the monitoring tool itself.
+  function generateStatusPage(){
+    var styleEl = document.querySelector('style');
+    var css = styleEl ? styleEl.textContent : '';
+    var generatedAt = new Date();
+    var rows = state.sites.map(function(site){
+      var history = state.history[site.id] || [];
+      var verdict = isInMaintenance(site) ? 'maintenance' : (site.lastVerdict || 'unknown');
+      var uptime = uptimePercent(history);
+      var windows = uptimeWindows(site);
+      var uptimeVal = windows.day != null ? windows.day.toFixed(1) + '%' : (uptime != null ? uptime + '%' : '\u2014');
+      return '<div class="station v-' + verdict + '">' +
+        '<div class="station-row">' +
+          '<span class="station-label v-' + verdict + '"><span class="dot"></span>' + VERDICT_LABEL[verdict] + '</span>' +
+          '<div class="station-info"><div class="station-name">' + escapeHtml(site.name) + '</div>' +
+          '<div class="station-url"><a href="' + escapeHtml(site.url) + '" target="_blank" rel="noopener noreferrer" title="Open in a new tab">' + escapeHtml(site.url) + '</a></div></div>' +
+          '<div class="station-stats">' +
+            '<div class="stat"><span class="stat-label">' + (windows.day != null ? '24h' : 'Contact') + '</span><span class="stat-val">' + uptimeVal + '</span></div>' +
+            '<div class="stat"><span class="stat-label">Checked</span><span class="stat-val">' + timeAgo(site.lastCheckedAt) + '</span></div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="trace-wrap">' + renderTrace(history) + '</div>' +
+      '</div>';
+    }).join('');
+    return '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">' +
+      '<meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="color-scheme" content="dark">' +
+      '<title>Station status \u2014 ' + escapeHtml(generatedAt.toLocaleString()) + '</title>' +
+      '<style>' + css + '\n.station-actions,.signals,.icon-btn{display:none!important;}</style></head>' +
+      '<body><div class="app"><header class="top"><div class="brand">' +
+      '<svg width="32" height="32" viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="17" fill="none" stroke="var(--brass)" stroke-width="1.4" opacity=".5"/><path d="M5 20 L14 20 L18 10 L22 30 L26 20 L35 20" fill="none" stroke="var(--brass)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>' +
+      '<h1>Outpost</h1></div>' +
+      '<p class="tagline">Static status snapshot \u2014 not live, generated ' + escapeHtml(generatedAt.toLocaleString()) + '</p></header>' +
+      '<section class="site-list">' + (rows || '<div class="empty">No stations were logged at export time.</div>') + '</section>' +
+      '<footer><p class="credit">Snapshot from OUTPOST \u00b7 will not update itself \u00b7 re-export to refresh \u00b7 CC0</p></footer>' +
+      '</div></body></html>';
+  }
+
+  function exportStatusPage(){
+    if (!state.sites.length) { showToast('No stations to snapshot yet', 'warn'); return; }
+    var html = generateStatusPage();
+    sha256Hex(html).then(function(hash){
+      var finalHtml = hash ? html.replace('</footer>', '<p class="credit">SHA-256 of this page at export: ' + hash + '</p></footer>') : html;
+      var blob = new Blob([finalHtml], { type:'text/html' });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url;
+      a.download = 'outpost-status-' + new Date().toISOString().slice(0,10) + '.html';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      showToast('Status page exported \u2014 upload it anywhere to share', 'success');
+    });
+  }
+
+  // A small, hand-rolled shields.io-style badge — a static snapshot, same spirit as the
+  // status page but sized to actually embed in a README or a personal site rather than
+  // link out to. No external badge service involved, just inline SVG.
+  function generateBadgeSvg(site){
+    var history = state.history[site.id] || [];
+    var uptime = uptimePercent(history);
+    var verdict = isInMaintenance(site) ? 'maintenance' : (site.lastVerdict || 'unknown');
+    var color = { up:'#7ea363', down:'#d4704a', timeout:'#d9b463', maintenance:'#8f6c34' }[verdict] || '#6b7789';
+    var value = verdict === 'up' ? (uptime != null ? uptime + '% up' : 'up') : VERDICT_LABEL[verdict].toLowerCase();
+    var label = 'status';
+    var charW = 6.5;
+    var labelW = Math.round(label.length * charW + 18);
+    var valueW = Math.round(value.length * charW + 20);
+    var totalW = labelW + valueW;
+    return '<svg xmlns="http://www.w3.org/2000/svg" width="' + totalW + '" height="20" role="img" aria-label="' + escapeHtml(label + ': ' + value) + '">' +
+      '<title>' + escapeHtml(site.name + ' \u2014 ' + label + ': ' + value) + '</title>' +
+      '<linearGradient id="s" x2="0" y2="100%"><stop offset="0" stop-color="#bbb" stop-opacity=".1"/><stop offset="1" stop-opacity=".1"/></linearGradient>' +
+      '<clipPath id="r"><rect width="' + totalW + '" height="20" rx="3" fill="#fff"/></clipPath>' +
+      '<g clip-path="url(#r)">' +
+        '<rect width="' + labelW + '" height="20" fill="#555"/>' +
+        '<rect x="' + labelW + '" width="' + valueW + '" height="20" fill="' + color + '"/>' +
+        '<rect width="' + totalW + '" height="20" fill="url(#s)"/>' +
+      '</g>' +
+      '<g fill="#fff" text-anchor="middle" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" font-size="11">' +
+        '<text x="' + (labelW / 2) + '" y="14">' + escapeHtml(label) + '</text>' +
+        '<text x="' + (labelW + valueW / 2) + '" y="14">' + escapeHtml(value) + '</text>' +
+      '</g>' +
+    '</svg>';
+  }
+
+  function downloadBadge(site){
+    var svg = generateBadgeSvg(site);
+    var blob = new Blob([svg], { type:'image/svg+xml' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = 'outpost-badge-' + site.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') + '.svg';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    showToast('Badge downloaded \u2014 embed it in a README or page', 'success');
+  }
+
+  function importData(file){
+    if (file.size > 20 * 1024 * 1024) { showToast('That file is too large to be an OUTPOST log', 'danger'); return; }
+    var reader = new FileReader();
+    reader.onload = function(){
+      try {
+        var parsed = JSON.parse(reader.result);
+        if (!parsed || !Array.isArray(parsed.sites)) throw new Error('bad shape');
+        var replace = confirm('Replace the current log with the imported file?\n\nOK = replace, Cancel = merge new stations in.');
+        if (replace) {
+          state = coerceStateShape(parsed);
+        } else {
+          var existingUrls = {}, usedIds = {};
+          state.sites.forEach(function(s){ existingUrls[s.url] = true; usedIds[s.id] = true; });
+          var cleaned = cleanSitesAndHistory(parsed.sites, parsed.history, usedIds);
+          cleaned.sites.forEach(function(s){
+            if (!existingUrls[s.url]) { state.sites.push(s); state.history[s.id] = cleaned.history[s.id] || []; existingUrls[s.url] = true; }
+          });
+        }
+        saveState();
+        initSettingsUI();
+        render();
+        showToast('Import complete', 'success');
+      } catch(e) {
+        showToast('That file doesn\u2019t look like an OUTPOST log', 'danger');
+      }
+    };
+    reader.readAsText(file);
+  }
+
+  // ---------------- Auto-refresh ----------------
+
+  var autoRefreshTimer = null;
+  function setupAutoRefresh(){
+    if (autoRefreshTimer) { clearInterval(autoRefreshTimer); autoRefreshTimer = null; }
+    var ms = state.settings.autoRefreshMs;
+    if (ms && ms > 0) autoRefreshTimer = setInterval(checkAll, ms);
+  }
+
+  // ---------------- Settings UI sync ----------------
+
+  function minsToTimeStr(mins){
+    var h = Math.floor(mins / 60) % 24, m = mins % 60;
+    return (h < 10 ? '0' : '') + h + ':' + (m < 10 ? '0' : '') + m;
+  }
+  function timeStrToMins(str){
+    var parts = (str || '00:00').split(':');
+    return (parseInt(parts[0], 10) || 0) * 60 + (parseInt(parts[1], 10) || 0);
+  }
+
+  function initSettingsUI(){
+    $('#autoRefreshSelect').value = String(state.settings.autoRefreshMs || 0);
+    $('#timeoutSelect').value = String(state.settings.timeoutMs || 8000);
+    $('#soundToggle').checked = !!state.settings.sound;
+    $('#notifyToggle').checked = !!(state.settings.notify && 'Notification' in window && Notification.permission === 'granted');
+    $('#dnsToggle').checked = !!state.settings.dnsSignal;
+    $('#canaryToggle').checked = !!state.settings.canary;
+    $('#confirmSelect').value = String(state.settings.confirmThreshold || 1);
+    $('#targetSelect').value = String(state.settings.targetUptimePct || 99.5);
+    $('#quietToggle').checked = !!state.settings.quietHours;
+    $('#quietStartInput').value = minsToTimeStr(state.settings.quietStart != null ? state.settings.quietStart : 1380);
+    $('#quietEndInput').value = minsToTimeStr(state.settings.quietEnd != null ? state.settings.quietEnd : 420);
+    $('#sortSelect').value = state.settings.listSort || 'health';
+    $('#filterSelect').value = state.settings.listFilter || 'all';
+    $('#groupBySelect').value = state.settings.groupBy || 'category';
+    $('#reminderSelect').value = String(state.settings.reminderMs || 0);
+  }
+
+  // ---------------- Event wiring ----------------
+
+  $('#addForm').addEventListener('submit', function(e){
+    e.preventDefault();
+    addSite($('#urlInput').value, $('#nameInput').value, $('#categoryInput').value, $('#subcategoryInput').value, $('#serverInput').value);
+    $('#urlInput').value = '';
+    $('#nameInput').value = '';
+    $('#categoryInput').value = '';
+    $('#subcategoryInput').value = '';
+    $('#serverInput').value = '';
+    $('#urlInput').focus();
+  });
+
+  $('#checkAllBtn').addEventListener('click', function(){ checkAll(); });
+
+  $('#autoRefreshSelect').addEventListener('change', function(e){
+    state.settings.autoRefreshMs = parseInt(e.target.value, 10);
+    saveState();
+    setupAutoRefresh();
+  });
+
+  $('#timeoutSelect').addEventListener('change', function(e){
+    state.settings.timeoutMs = parseInt(e.target.value, 10);
+    saveState();
+  });
+
+  $('#dnsToggle').addEventListener('change', function(e){
+    state.settings.dnsSignal = e.target.checked;
+    saveState();
+  });
+
+  $('#canaryToggle').addEventListener('change', function(e){
+    state.settings.canary = e.target.checked;
+    if (!e.target.checked) delete state.canary;
+    saveState();
+    render();
+  });
+
+  $('#confirmSelect').addEventListener('change', function(e){
+    state.settings.confirmThreshold = parseInt(e.target.value, 10);
+    saveState();
+  });
+
+  $('#targetSelect').addEventListener('change', function(e){
+    state.settings.targetUptimePct = parseFloat(e.target.value);
+    saveState();
+    render();
+  });
+
+  $('#quietToggle').addEventListener('change', function(e){
+    state.settings.quietHours = e.target.checked;
+    saveState();
+  });
+  $('#quietStartInput').addEventListener('change', function(e){
+    state.settings.quietStart = timeStrToMins(e.target.value);
+    saveState();
+  });
+  $('#quietEndInput').addEventListener('change', function(e){
+    state.settings.quietEnd = timeStrToMins(e.target.value);
+    saveState();
+  });
+
+  $('#reminderSelect').addEventListener('change', function(e){
+    state.settings.reminderMs = parseInt(e.target.value, 10);
+    saveState();
+  });
+
+  $('#groupBySelect').addEventListener('change', function(e){
+    state.settings.groupBy = e.target.value;
+    saveState();
+    render();
+  });
+  $('#sortSelect').addEventListener('change', function(e){
+    state.settings.listSort = e.target.value;
+    saveState();
+    render();
+  });
+  $('#filterSelect').addEventListener('change', function(e){
+    state.settings.listFilter = e.target.value;
+    saveState();
+    render();
+  });
+  $('#categoryFilterSelect').addEventListener('change', function(e){
+    state.settings.categoryFilter = e.target.value;
+    saveState();
+    render();
+  });
+
+  $('#shareBtn').addEventListener('click', exportStatusPage);
+
+  $('#soundToggle').addEventListener('change', function(e){
+    state.settings.sound = e.target.checked;
+    saveState();
+    if (state.settings.sound) playBeep(660, 120);
+  });
+
+  $('#notifyToggle').addEventListener('change', function(e){
+    if (e.target.checked) {
+      if (!('Notification' in window)) {
+        showToast('Notifications aren\u2019t supported in this browser', 'danger');
+        e.target.checked = false; return;
+      }
+      Notification.requestPermission().then(function(perm){
+        if (perm !== 'granted') {
+          showToast('Notification permission denied', 'danger');
+          e.target.checked = false;
+          state.settings.notify = false;
+        } else {
+          state.settings.notify = true;
+        }
+        saveState();
+      });
+    } else {
+      state.settings.notify = false;
+      saveState();
+    }
+  });
+
+  $('#exportBtn').addEventListener('click', exportData);
+  $('#importBtn').addEventListener('click', function(){ $('#importFile').click(); });
+  $('#importFile').addEventListener('change', function(e){
+    var file = e.target.files[0];
+    if (file) importData(file);
+    e.target.value = '';
+  });
+
+  $('#resetBtn').addEventListener('click', function(){
+    if (!confirm('Clear every station and check log? This can\u2019t be undone.')) return;
+    state = Object.assign(defaultState(), { settings: state.settings });
+    saveState();
+    render();
+    showToast('Log cleared', 'info');
+  });
+
+  $('#siteList').addEventListener('click', function(e){
+    var btn = e.target.closest('[data-action]');
+    if (!btn) return;
+    if (btn.dataset.action === 'load-examples') { addExampleStations(); return; }
+    var card = btn.closest('[data-site-id]');
+    var id = card && card.getAttribute('data-site-id');
+    if (!id) return;
+    if (btn.dataset.action === 'check') checkOne(id);
+    if (btn.dataset.action === 'remove') removeSite(id);
+    if (btn.dataset.action === 'report') {
+      var site = state.sites.find(function(s){ return s.id === id; });
+      var epIndex = parseInt(btn.dataset.ep, 10);
+      if (site && site.episodes && site.episodes[epIndex]) copyIncidentReport(site, site.episodes[epIndex]);
+    }
+    if (btn.dataset.action === 'email') {
+      var esite = state.sites.find(function(s){ return s.id === id; });
+      var eIndex = parseInt(btn.dataset.ep, 10);
+      if (esite && esite.episodes && esite.episodes[eIndex]) emailIncident(esite, esite.episodes[eIndex]);
+    }
+    if (btn.dataset.action === 'endmaint') {
+      var msite = state.sites.find(function(s){ return s.id === id; });
+      if (msite) {
+        endMaintenanceNow(msite);
+        saveState();
+        render();
+        showToast('Maintenance ended for ' + msite.name, 'info');
+      }
+    }
+    if (btn.dataset.action === 'badge') {
+      var bsite = state.sites.find(function(s){ return s.id === id; });
+      if (bsite) downloadBadge(bsite);
+    }
+    if (btn.dataset.action === 'epnote') {
+      var nsite = state.sites.find(function(s){ return s.id === id; });
+      var nIndex = parseInt(btn.dataset.ep, 10);
+      if (nsite && nsite.episodes && nsite.episodes[nIndex]) {
+        var ep = nsite.episodes[nIndex];
+        var typed = prompt('What happened? (one line \u2014 shown on this outage from now on)', ep.note || '');
+        if (typed !== null) { // null means cancelled; empty string means an intentional clear
+          ep.note = typed.trim();
+          saveState();
+          render();
+        }
+      }
+    }
+    if (btn.dataset.action === 'ack') {
+      var asite = state.sites.find(function(s){ return s.id === id; });
+      if (asite) {
+        asite.reminderAcked = true;
+        saveState();
+        render();
+        showToast('Acknowledged \u2014 reminders paused for this outage', 'info');
+      }
+    }
+  });
+
+  $('#siteList').addEventListener('change', function(e){
+    if (e.target.classList.contains('notes-input')) {
+      var nsite = state.sites.find(function(s){ return s.id === e.target.dataset.siteId; });
+      if (!nsite) return;
+      nsite.notes = e.target.value;
+      saveState();
+      showToast('Notes saved', 'info');
+      return;
+    }
+    if (e.target.classList.contains('category-select')) {
+      var csite = state.sites.find(function(s){ return s.id === e.target.dataset.siteId; });
+      if (!csite) return;
+      var val = e.target.value;
+      if (val === '__new__') {
+        var typed = prompt('New category name:');
+        if (typed && typed.trim()) {
+          csite.category = typed.trim();
+          saveState();
+          render();
+          showToast(csite.name + ' filed under ' + csite.category, 'info');
+        } else {
+          render(); // revert the select back to its actual current value
+        }
+        return;
+      }
+      csite.category = val;
+      saveState();
+      render();
+      return;
+    }
+    if (e.target.classList.contains('subcategory-select')) {
+      var subsite = state.sites.find(function(s){ return s.id === e.target.dataset.siteId; });
+      if (!subsite) return;
+      var subval = e.target.value;
+      if (subval === '__new__') {
+        var typedSub = prompt('New subcategory name:');
+        if (typedSub && typedSub.trim()) {
+          subsite.subcategory = typedSub.trim();
+          saveState();
+          render();
+          showToast(subsite.name + ' filed under ' + subsite.category + '/' + subsite.subcategory, 'info');
+        } else {
+          render();
+        }
+        return;
+      }
+      subsite.subcategory = subval;
+      saveState();
+      render();
+      return;
+    }
+    if (e.target.classList.contains('maint-select')) {
+      var msite2 = state.sites.find(function(s){ return s.id === e.target.dataset.siteId; });
+      if (!msite2 || !e.target.value) return;
+      var durationMs = e.target.value === 'manual' ? MAINTENANCE_INDEFINITE : parseInt(e.target.value, 10) * 60000;
+      startMaintenance(msite2, durationMs);
+      saveState();
+      render();
+      showToast(msite2.name + ' in maintenance', 'info');
+    }
+  });
+
+  $('#siteList').addEventListener('focusin', function(e){
+    if (e.target.classList.contains('notes-input')) editingNotesId = e.target.dataset.siteId;
+  });
+  $('#siteList').addEventListener('focusout', function(e){
+    if (e.target.classList.contains('notes-input')) {
+      editingNotesId = null;
+      render(); // catch up on anything that happened while the edit was guarded
+    }
+  });
+
+  // Cross-tab sync: if this file is open in more than one tab, a change saved in one
+  // (a check completing, a station added) refreshes the others instead of leaving them
+  // showing stale data. Native browser event, no polling.
+  window.addEventListener('storage', function(e){
+    if (e.key !== STORAGE_KEY || !e.newValue) return;
+    try {
+      state = coerceStateShape(JSON.parse(e.newValue));
+      initSettingsUI();
+      render();
+    } catch(err) { /* ignore malformed cross-tab payload */ }
+  });
+
+  // A light operator-console touch: L listens now, / jumps to the add field, E exports.
+  // Never fires while typing in a field.
+  document.addEventListener('keydown', function(e){
+    var tag = document.activeElement && document.activeElement.tagName;
+    var typing = tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT';
+    if (typing) return;
+    if (e.key === '/') { e.preventDefault(); $('#urlInput').focus(); }
+    else if (e.key === 'l' || e.key === 'L') { checkAll(); }
+    else if (e.key === 'e' || e.key === 'E') { exportData(); }
+  });
+
+  function renderAwaySummary(summary){
+    $('#awayDuration').textContent = formatDuration(summary.awayMs);
+    var html = summary.events.map(function(ev){
+      var range = ev.endedAt
+        ? new Date(ev.startedAt).toLocaleString() + ' \u2013 ' + new Date(ev.endedAt).toLocaleTimeString() + ' (' + formatDuration(ev.endedAt - ev.startedAt) + ')'
+        : new Date(ev.startedAt).toLocaleString() + ' \u2014 still ongoing';
+      return '<div class="away-event"><strong>' + escapeHtml(ev.site) + '</strong>: silent ' + range + '</div>';
+    }).join('');
+    if (summary.overflow > 0) html += '<div class="away-event away-overflow">+ ' + summary.overflow + ' earlier event' + (summary.overflow === 1 ? '' : 's') + ' not shown</div>';
+    $('#awayEvents').innerHTML = html;
+    $('#awaySummary').style.display = '';
+  }
+
+  $('#awayDismiss').addEventListener('click', function(){ $('#awaySummary').style.display = 'none'; });
+
+  // ---------------- Init ----------------
+
+  var awaySummary = buildAwaySummary(); // must run before checkAll() below ever calls saveState()
+
+  initSettingsUI();
+  render();
+  if (awaySummary) renderAwaySummary(awaySummary);
+  if (state.sites.length) checkAll();
+  setupAutoRefresh();
+
+})();
+</script>
+</body>
+</html>
