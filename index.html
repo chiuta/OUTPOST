@@ -9,7 +9,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: http: https:; connect-src http: https:; base-uri 'none'; form-action 'none'; object-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-O515fuYeIuO6tAM0IgDh4SlI2SjmHRPMzGKs0UbyGWQ='; style-src 'unsafe-inline'; img-src data: http: https:; connect-src http: https:; base-uri 'none'; form-action 'none'; object-src 'none'">
 <meta name="description" content="OUTPOST: a single-file, browser-only reachability monitor for your own websites. Checks run in your browser, data stays in local storage, no telemetry.">
 <meta property="og:title" content="OUTPOST — a listening post for your websites">
 <meta property="og:description" content="Single-file, browser-only reachability monitor. No server, no account, no telemetry.">
@@ -116,7 +116,7 @@
   .add-form input{flex:1 1 220px;}
   .add-form button{flex:0 0 auto;}
 
-  input[type=text],select{
+  input[type=text],input[type=search],select{
     font-family:var(--font-mono);
     font-size:.85rem;
     background:var(--ink);
@@ -126,8 +126,8 @@
     padding:9px 12px;
     min-width:0;
   }
-  input[type=text]::placeholder{color:var(--ash-dim);}
-  input[type=text]:focus-visible,select:focus-visible,
+  input[type=text]::placeholder,input[type=search]::placeholder{color:var(--ash-dim);}
+  input[type=text]:focus-visible,input[type=search]:focus-visible,select:focus-visible,
   button:focus-visible,summary:focus-visible,a:focus-visible{
     outline:2px solid var(--brass);
     outline-offset:2px;
@@ -425,6 +425,18 @@
   .toast-danger{border-left-color:var(--signal-lost);}
   .toast-warn{border-left-color:var(--signal-faint);}
 
+  .field-error{flex:1 0 100%;margin:0;font-family:var(--font-serif);font-size:.85rem;color:var(--signal-lost);}
+  .field-error[hidden]{display:none;}
+  input[aria-invalid=true]{border-color:var(--signal-lost);}
+  .ctrl input[type=search]{padding:6px 8px;font-size:.78rem;width:11em;}
+  @media print{
+    body{background:#fff;color:#000;}
+    .controls,.add-form,.panel,.toast-container,.away-dismiss,.storage-banner,footer details{display:none !important;}
+    .station,.category-group,.empty{background:#fff !important;color:#000 !important;border-color:#999 !important;box-shadow:none !important;break-inside:avoid;}
+    .station *{color:#000 !important;}
+    a{color:#000;text-decoration:underline;}
+  }
+
   @media (prefers-reduced-motion:reduce){
     *{animation-duration:.001ms !important;animation-iteration-count:1 !important;transition-duration:.001ms !important;}
   }
@@ -462,7 +474,7 @@
   <section class="panel">
     <h2>Add a station</h2>
     <form id="addForm" class="add-form" autocomplete="off">
-      <input type="text" id="urlInput" placeholder="https://example.com" required aria-label="Website URL">
+      <input type="text" id="urlInput" placeholder="https://example.com" required aria-label="Website URL" aria-describedby="urlError">
       <input type="text" id="nameInput" placeholder="Label (optional)" aria-label="Station label">
       <input type="text" id="categoryInput" placeholder="Category (optional)" aria-label="Category" list="categoryOptions">
       <datalist id="categoryOptions"></datalist>
@@ -471,6 +483,7 @@
       <input type="text" id="serverInput" placeholder="Server (optional)" aria-label="Server" list="serverOptions">
       <datalist id="serverOptions"></datalist>
       <button type="submit" class="btn-primary">Add station</button>
+      <p class="field-error" id="urlError" role="alert" hidden></p>
     </form>
 
     <div class="controls">
@@ -521,6 +534,9 @@
           <option value="name">Name</option>
           <option value="added">Recently added</option>
         </select>
+      </label>
+      <label class="ctrl">Find
+        <input type="search" id="findInput" placeholder="name, URL, tag" autocomplete="off" maxlength="100">
       </label>
       <label class="ctrl">Show
         <select id="filterSelect">
@@ -588,7 +604,7 @@
         <p>Reopen this file after being away for a while and, if anything happened, a dismissible panel reconstructs it from the outage log itself — no separate tracking, just reading back through episodes that started after the last time this tab was active. The browser tab's title and icon also carry a live trouble count, so a glance at the tab bar is enough without switching over.</p>
         <p>Once there are enough stations that a flat list stops being scannable, <strong>Health</strong> gives each one a single 0-100 number — 70% current confirmed status, 30% historical uptime, with small penalties for a worsening latency trend or a blown budget — and <strong>Sort</strong>/<strong>Show</strong> let the list order by it (worst first, by default) or by latency, name, or recency, and optionally hide anything that isn't currently in trouble.</p>
         <p>Every outage — ongoing or resolved — has an <strong>email</strong> button alongside "copy report" that opens a pre-filled message (subject, timing, duration, and any runbook notes for that station) with the recipient left blank on purpose, since OUTPOST shouldn't guess who the right person to tell is.</p>
-        <p>Shortcuts: <strong>L</strong> listens now, <strong>/</strong> jumps to the add field, <strong>E</strong> exports — all inactive while typing in a field.</p>
+        <p>Shortcuts: <strong>L</strong> listens now, <strong>/</strong> jumps to the add field, <strong>F</strong> jumps to the Find box (Esc clears it), <strong>E</strong> exports — all inactive while typing in a field.</p>
         <p>What none of this can do:</p>
         <ul>
           <li>Tell a 500 error from a 200 OK — only whether the server responded, not what it said.</li>
@@ -865,6 +881,17 @@
     return new Date(ts).toLocaleDateString();
   }
 
+  // Why a typed address is rejected, in plain words (null when it is acceptable).
+  function urlProblem(raw){
+    var url = (raw || '').trim();
+    if (!url) return 'Type a website address first, for example example.com.';
+    if (/\s/.test(url)) return 'An address cannot contain spaces. Enter one website at a time.';
+    var m = url.match(/^([a-zA-Z][a-zA-Z0-9+.-]*):\/\//);
+    if (m && m[1].toLowerCase() !== 'http' && m[1].toLowerCase() !== 'https') return 'Only http:// and https:// addresses can be monitored (not ' + m[1].toLowerCase() + '://).';
+    if (!normalizeUrl(url)) return 'That does not look like a valid website address. Use a name such as example.com, an IP address or localhost.';
+    return null;
+  }
+
   function normalizeUrl(raw){
     var url = (raw || '').trim();
     if (!url) return null;
@@ -908,9 +935,9 @@
 
   function addSite(rawUrl, rawName, rawCategory, rawSubcategory, rawServer){
     var normalized = normalizeUrl(rawUrl);
-    if (!normalized) { showToast('Not a valid URL', 'danger'); return; }
+    if (!normalized) { showToast(urlProblem(rawUrl) || 'Not a valid URL', 'danger'); return false; }
     if (state.sites.some(function(s){ return s.url === normalized; })) {
-      showToast('Already listening to this station', 'warn'); return;
+      showToast('Already listening to this station', 'warn'); return false;
     }
     var hostname;
     try { hostname = new URL(normalized).hostname; } catch(e) { hostname = normalized; }
@@ -924,6 +951,7 @@
     render();
     showToast('Station logged: ' + name, 'success');
     checkOne(site.id);
+    return true;
   }
 
   function removeSite(id){
@@ -1823,10 +1851,17 @@
 
   // Worst health first by default — the ordering that matches how you'd actually triage
   // a list once there are enough stations that eyeballing a flat list stops working.
+  function findNeedle(){ var el = $('#findInput'); return el ? el.value.trim().toLowerCase() : ''; }
   function getSortedFilteredSites(){
     var sites = state.sites.slice();
     if (state.settings.listFilter === 'trouble') {
       sites = sites.filter(function(s){ return s.lastVerdict === 'down' || s.lastVerdict === 'timeout'; });
+    }
+    var needle = findNeedle();
+    if (needle) {
+      sites = sites.filter(function(s){
+        return [s.name, s.url, s.category, s.subcategory, s.server].join('\n').toLowerCase().indexOf(needle) !== -1;
+      });
     }
     var catFilter = state.settings.categoryFilter || 'all';
     if (catFilter === '__uncategorized__') {
@@ -1942,7 +1977,7 @@
 
     var sitesToShow = getSortedFilteredSites();
     if (sitesToShow.length === 0) {
-      listEl.innerHTML = '<div class="empty">Nothing matches this filter right now.</div>';
+      listEl.innerHTML = '<div class="empty">' + (findNeedle() ? 'No station matches \u201C' + escapeHtml(findNeedle()) + '\u201D. Clear the Find box or change the filters.' : 'Nothing matches this filter right now.') + '</div>';
       return;
     }
 
@@ -2221,14 +2256,29 @@
 
   $('#addForm').addEventListener('submit', function(e){
     e.preventDefault();
-    addSite($('#urlInput').value, $('#nameInput').value, $('#categoryInput').value, $('#subcategoryInput').value, $('#serverInput').value);
-    $('#urlInput').value = '';
+    var urlEl = $('#urlInput'), errEl = $('#urlError');
+    var problem = urlProblem(urlEl.value);
+    if (problem) {
+      errEl.textContent = problem; errEl.hidden = false;
+      urlEl.setAttribute('aria-invalid', 'true');
+      urlEl.focus();
+      return;
+    }
+    errEl.hidden = true; errEl.textContent = ''; urlEl.removeAttribute('aria-invalid');
+    var ok = addSite(urlEl.value, $('#nameInput').value, $('#categoryInput').value, $('#subcategoryInput').value, $('#serverInput').value);
+    if (ok === false) { urlEl.focus(); return; } // keep what was typed (e.g. a duplicate) so it can be corrected
+    urlEl.value = '';
     $('#nameInput').value = '';
     $('#categoryInput').value = '';
     $('#subcategoryInput').value = '';
     $('#serverInput').value = '';
-    $('#urlInput').focus();
+    urlEl.focus();
   });
+  $('#urlInput').addEventListener('input', function(){
+    var errEl = $('#urlError'); if (!errEl.hidden) { errEl.hidden = true; errEl.textContent = ''; this.removeAttribute('aria-invalid'); }
+  });
+  $('#findInput').addEventListener('input', function(){ render(); });
+  $('#findInput').addEventListener('keydown', function(e){ if (e.key === 'Escape' && this.value) { this.value = ''; render(); e.stopPropagation(); } });
 
   $('#checkAllBtn').addEventListener('click', function(){ checkAll(); });
 
@@ -2491,15 +2541,16 @@
     } catch(err) { /* ignore malformed cross-tab payload */ }
   });
 
-  // A light operator-console touch: L listens now, / jumps to the add field, E exports.
+  // A light operator-console touch: L listens now, / jumps to the add field, F jumps to Find, E exports.
   // Never fires while typing in a field.
   document.addEventListener('keydown', function(e){
     var tag = document.activeElement && document.activeElement.tagName;
     var typing = tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT';
-    if (typing) return;
+    if (typing || e.ctrlKey || e.metaKey || e.altKey) return; // never hijack browser shortcuts such as Ctrl+F or Ctrl+E
     if (e.key === '/') { e.preventDefault(); $('#urlInput').focus(); }
     else if (e.key === 'l' || e.key === 'L') { checkAll(); }
     else if (e.key === 'e' || e.key === 'E') { exportData(); }
+    else if (e.key === 'f' || e.key === 'F') { e.preventDefault(); $('#findInput').focus(); }
   });
 
   function renderAwaySummary(summary){

@@ -24,7 +24,10 @@ Verificate în cod și, unde se poate, în teste automate (Chromium headless, re
 - Ferestre de mentenanță (30 min … „până o închid eu”), note de tip runbook per stație, memento repetat, ore de liniște, sunet și notificări de browser la schimbare.
 - „Canary” opțional (dezactivat implicit): verifică google.com și cloudflare.com ca să deosebească o problemă a conexiunii tale de una a stațiilor.
 - Export/import al jurnalului (JSON), „Share status page” (instantaneu HTML static), insignă SVG per stație, sincronizare între taburi, rezumat „While you were away”.
-- Scurtături: `/` (câmpul de adăugare), `L` (listen now), `E` (export).
+- Câmp „Find”: filtrează lista după nume, URL, categorie, subcategorie sau server, cu mesaj explicit când nu există potriviri.
+- Validare cu mesaje precise sub câmpul URL (spații, schemă neacceptată, gazdă invalidă); ce ai scris rămâne în câmp dacă adresa e respinsă sau duplicată.
+- Stil de tipărire: la imprimare rămân doar stațiile, fără comenzi.
+- Scurtături: `/` (câmpul de adăugare), `F` (câmpul Find; Esc îl golește), `L` (listen now), `E` (export); nu se activează cu Ctrl/Alt/Cmd apăsate (Ctrl+F rămâne al browserului).
 
 ## Manual de utilizare
 
@@ -40,7 +43,7 @@ Verificate în cod și, unde se poate, în teste automate (Chromium headless, re
 - **Stocare locală:** `localStorage`, cheia `outpost_state_v1` (stații, istoric, episoade, note, setări, ultimele adrese IP rezolvate). Dacă stocarea e blocată, aplicația afișează un avertisment și funcționează doar în sesiunea curentă.
 - **Către ce site-uri se conectează:** la prima deschidere, către niciunul. După ce adaugi stații, browserul tău trimite fiecărei stații câte o cerere `HEAD` și una pentru `/favicon.ico`; stația vede adresa ta IP, ca la orice vizitator.
 - **Opțional, dezactivat implicit:** „DNS signal” trimite numele fiecărei gazde la `cloudflare-dns.com`; „Canary” contactează `www.google.com` și `www.cloudflare.com` după fiecare serie de verificări. Dacă le activezi, acei terți primesc adresa ta IP și (pentru DNS) numele gazdelor monitorizate.
-- Nu există scripturi, fonturi sau imagini încărcate de pe alte domenii. Pagina are o politică CSP (`Content-Security-Policy`) care permite doar scriptul/stilul din fișier.
+- Nu există scripturi, fonturi sau imagini încărcate de pe alte domenii. Pagina are o politică CSP (`Content-Security-Policy`): scriptul este permis doar pe baza hash-ului SHA-256 al scriptului din fișier (fără `'unsafe-inline'` pentru scripturi).
 - Permisiuni cerute doar când bifezi: notificări (la bifarea „Notify on change”), sunet (Web Audio).
 - Fișierul exportat (`outpost-log-*.json`) conține lista ta de stații, note și ultimele IP-uri: tratează-l ca privat.
 
@@ -73,3 +76,5 @@ OUTPOST is a single-file, browser-only reachability monitor (no server, no accou
 ### 11 octombrie 2026
 - Adresele invalide (cu spații sau fără nume de gazdă valid, ex. „not a url !!”) sunt acum respinse cu „Not a valid URL” în loc să fie adăugate.
 - Conținutul este încadrat în `<main>`: 0 încălcări axe (landmark, region); fundalul acoperă acum toată înălțimea paginii.
+- Câmp „Find”, scurtătura `F`, mesaje de validare precise sub câmpul URL (textul rămâne în câmp la respingere), stil de tipărire; scurtăturile ignoră acum combinațiile cu Ctrl/Alt/Cmd.
+- CSP: `script-src` pe hash SHA-256, fără `'unsafe-inline'`.
