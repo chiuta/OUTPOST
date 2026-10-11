@@ -48,7 +48,8 @@
     --font-mono:ui-monospace,"SF Mono","Cascadia Code","Fira Code",Consolas,"Courier New",monospace;
   }
   *{box-sizing:border-box;}
-  html,body{height:100%;}
+  html{height:100%;background:var(--ink);}
+  body{min-height:100%;}
   body{
     margin:0;
     background:
@@ -448,6 +449,7 @@
     <div class="logline" id="logLine">no stations logged yet</div>
   </header>
 
+  <main id="main">
   <div class="away-summary" id="awaySummary" style="display:none;" role="status">
     <button class="away-dismiss" id="awayDismiss" aria-label="Dismiss">&#10005;</button>
     <div class="away-title">While you were away (<span id="awayDuration"></span>)</div>
@@ -558,6 +560,7 @@
   </section>
 
   <section class="site-list" id="siteList"></section>
+  </main>
 
   <footer>
     <details>
@@ -865,10 +868,14 @@
   function normalizeUrl(raw){
     var url = (raw || '').trim();
     if (!url) return null;
+    if (/\s/.test(url)) return null; // spaces never belong in a station address
     if (!/^[a-zA-Z][a-zA-Z0-9+.-]*:\/\//.test(url)) url = 'https://' + url;
     try {
       var parsed = new URL(url);
       if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') return null; // a website monitor only ever means http(s)
+      var host = parsed.hostname;
+      // hostname must look like a real host: localhost, an IP literal, or dot-separated DNS labels
+      if (!(host === 'localhost' || /^\[[0-9a-f:.]+\]$/i.test(host) || /^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+$/i.test(host))) return null;
       return parsed.href;
     } catch(e) { return null; }
   }
