@@ -1,0 +1,82 @@
+{
+  "schema": 1,
+  "slug": "outpost",
+  "name": "OUTPOST — a listening post for your websites",
+  "version": "1.1.0",
+  "updated": "2026-10-14",
+  "description": "OUTPOST: a single-file, browser-only reachability monitor for your own websites. Checks run in your browser, data stays in local storage, no telemetry.",
+  "egress": [
+    {
+      "host": "cloudflare-dns.com",
+      "via": [
+        "fetch"
+      ]
+    },
+    {
+      "host": "http:(orice gazdă)",
+      "via": [
+        "csp:connect-src",
+        "csp:img-src"
+      ]
+    },
+    {
+      "host": "https:(orice gazdă)",
+      "via": [
+        "csp:connect-src",
+        "csp:img-src"
+      ]
+    }
+  ],
+  "permissions": [
+    "Notification",
+    "clipboard",
+    "serviceWorker",
+    "localStorage",
+    "Web Crypto"
+  ],
+  "storageKeys": [],
+  "sizeBytes": 261425,
+  "sha256": "41c93a86cbdedcc9866477ccfd61c1bceadbe1a6799c6cb0bc94c02dcac50fa5",
+  "csp": {
+    "present": true,
+    "directives": {
+      "default-src": "'none'",
+      "script-src": "sha256×3",
+      "style-src": "'unsafe-inline'",
+      "img-src": "'self' data: http: https:",
+      "connect-src": "http: https:",
+      "base-uri": "'none'",
+      "form-action": "'none'",
+      "object-src": "'none'",
+      "manifest-src": "'self'",
+      "worker-src": "'self'"
+    },
+    "scriptInline": "hash",
+    "connect": "http: https:"
+  },
+  "features": {
+    "export": true,
+    "import": true,
+    "i18n": [],
+    "pwa": {
+      "manifest": true,
+      "serviceWorker": true
+    },
+    "modules": [
+      "core",
+      "label",
+      "bundle",
+      "search"
+    ]
+  },
+  "kit": {
+    "version": "1.0.0",
+    "modules": [
+      "core",
+      "label",
+      "bundle",
+      "search"
+    ]
+  },
+  "selfSerializing": false
+}

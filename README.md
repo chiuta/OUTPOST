@@ -1,6 +1,6 @@
 # OUTPOST
 
-**Versiune:** 1.0.0 · **Ultima actualizare:** 12 octombrie 2026
+**Versiune:** 1.1.0 · **Ultima actualizare:** 14 octombrie 2026
 
 Post de ascultare pentru site-urile tale: un monitor de accesibilitate (reachability) într-un singur fișier HTML, care rulează numai în browser.
 
@@ -24,10 +24,17 @@ Verificate în cod și, unde se poate, în teste automate (Chromium headless, re
 - Ferestre de mentenanță (30 min … „până o închid eu”), note de tip runbook per stație, memento repetat, ore de liniște, sunet și notificări de browser la schimbare.
 - „Canary” opțional (dezactivat implicit): verifică google.com și cloudflare.com ca să deosebească o problemă a conexiunii tale de una a stațiilor.
 - Export/import al jurnalului (JSON), „Share status page” (instantaneu HTML static), insignă SVG per stație, sincronizare între taburi, rezumat „While you were away”.
-- Câmp „Find”: filtrează lista după nume, URL, categorie, subcategorie sau server, cu mesaj explicit când nu există potriviri.
+- Câmp „Find”: filtrează lista după nume, URL, categorie, subcategorie sau server (din 1.1.0 și aproximativ, inclusiv în note), cu mesaj explicit când nu există potriviri.
 - Validare cu mesaje precise sub câmpul URL (spații, schemă neacceptată, gazdă invalidă); ce ai scris rămâne în câmp dacă adresa e respinsă sau duplicată.
 - Stil de tipărire: la imprimare rămân doar stațiile, fără comenzi.
 - Scurtături: `/` (câmpul de adăugare), `F` (câmpul Find; Esc îl golește), `L` (listen now), `E` (export); nu se activează cu Ctrl/Alt/Cmd apăsate (Ctrl+F rămâne al browserului).
+
+## Funcții noi (1.1.0)
+
+- **Raport de stare**: „Report (.md)” și „Report (.csv)” exportă tabelul stațiilor (stare, latență, uptime pe 24 h / 7 zile / 30 de zile calculat pe timp, ultima verificare), incidentele din ultimele 30 de zile cu notele lor și notele de runbook; „Print report” pregătește o foaie pentru tipărire / PDF. Raportul **nu conține adrese IP**. Câmpurile CSV care ar putea fi interpretate ca formule de foaie de calcul sunt neutralizate cu apostrof.
+- **„Find” tolerant**: pe lângă potrivirea literală veche, caută aproximativ (greșeli de scriere, diacritice ignorate) și în notele de runbook și notele episoadelor.
+- Copie de siguranță `.fff.json` (modul comun „fff-kit”, local, fără rețea): se deschide din dialogul care apare la clic pe versiunea din subsol (export, export criptat cu parolă, import cu confirmare, ștergerea datelor aplicației). Copia cuprinde cheia `outpost_state_v1`, deci **include adresele IP rezolvate**: tratează-o ca privată sau exportă-o criptată.
+- Interfața rămâne în engleză; nu există traduceri noi de verificat.
 
 ## Manual de utilizare
 
@@ -72,6 +79,10 @@ Alexio — Alexandru-Ionuț Chiuță, contact: alexio@trom.tf
 OUTPOST is a single-file, browser-only reachability monitor (no server, no account, no telemetry). A fresh install contacts nothing; it only probes the stations you add (HEAD no-cors request plus /favicon.ico). Optional, off by default: Cloudflare DNS-over-HTTPS lookups and a Google/Cloudflare canary. "Contact" only means that something answered; it cannot read HTTP status codes. State lives in localStorage; imported files are validated. CC0 1.0.
 
 ## Istoric / Changelog
+
+### 14 octombrie 2026 (v1.1.0)
+- Raport de stare (.md, .csv, tipărire / PDF) și „Find” aproximativ (FFF.search), inclusiv în notele de runbook și ale episoadelor.
+- Copie `.fff.json` prin modulele comune (core, label, bundle, search); politica CSP recalculată (hash-ul scriptului); teste noi: `tests/fff-r8.test.mjs`.
 
 ### 12 octombrie 2026 (v1.0.0)
 - 1.0.0 — 2026-10-12: versiunea și data ultimei actualizări sunt afișate în aplicație
