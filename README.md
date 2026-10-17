@@ -68,7 +68,7 @@ Descarcă `index.html` și deschide-l în browser. Fișierul în sine nu are nev
 
 ## Licență
 
-CC0 1.0 Universal (dedicare în domeniul public), conform declarației din fișier; vezi `LICENSE`.
+MIT, conform declarației din fișier; vezi `LICENSE`.
 
 ## Autor
 
@@ -76,7 +76,7 @@ Alexio — Alexandru-Ionuț Chiuță, contact: alexio@trom.tf
 
 ## English summary
 
-OUTPOST is a single-file, browser-only reachability monitor (no server, no account, no telemetry). A fresh install contacts nothing; it only probes the stations you add (HEAD no-cors request plus /favicon.ico). Optional, off by default: Cloudflare DNS-over-HTTPS lookups and a Google/Cloudflare canary. "Contact" only means that something answered; it cannot read HTTP status codes. State lives in localStorage; imported files are validated. CC0 1.0.
+OUTPOST is a single-file, browser-only reachability monitor (no server, no account, no telemetry). A fresh install contacts nothing; it only probes the stations you add (HEAD no-cors request plus /favicon.ico). Optional, off by default: Cloudflare DNS-over-HTTPS lookups and a Google/Cloudflare canary. "Contact" only means that something answered; it cannot read HTTP status codes. State lives in localStorage; imported files are validated. MIT licence.
 
 ## Istoric / Changelog
 

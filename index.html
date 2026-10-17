@@ -2,7 +2,7 @@
   OUTPOST — a listening post for your websites
   Single file. No build step. Contacts only the stations you add (plus, ONLY if you switch them on:
   Cloudflare DNS-over-HTTPS for the DNS signal, and Google/Cloudflare for the canary check).
-  Zero telemetry. CC0 1.0 Universal — do whatever you want with this.
+  Zero telemetry. MIT License — use, copy, modify and share freely, keeping the copyright notice.
 -->
 <!DOCTYPE html>
 <html lang="en" data-fff-hash="42965713c95360d0722e5e310f2d93e139232e49ed873f7b3f0b990d5e89d23f">
@@ -1383,7 +1383,7 @@
 <meta name="application-version" content="1.1.0">
 <meta name="last-updated" content="2026-10-14">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-bRX2Zfhyp2jG4HPoQsDOe57Ta0m02imDzd0UOFF3IJE=' 'sha256-YO40Pa9U54kBXfBS8s7ySLVhwIuT7JC9cMSApha5DIk=' 'sha256-ldqmeFmIjYWmrQxZFIVKj1RK1793CtGLsQxEQLZtuok='; style-src 'unsafe-inline'; img-src 'self' data: http: https:; connect-src http: https:; base-uri 'none'; form-action 'none'; object-src 'none'; manifest-src 'self'; worker-src 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-bRX2Zfhyp2jG4HPoQsDOe57Ta0m02imDzd0UOFF3IJE=' 'sha256-YO40Pa9U54kBXfBS8s7ySLVhwIuT7JC9cMSApha5DIk=' 'sha256-NznnRuqdSCYBbZ+kA6EzDjN4HIjkG/EmOt92yjngeNc='; style-src 'unsafe-inline'; img-src 'self' data: http: https:; connect-src http: https:; base-uri 'none'; form-action 'none'; object-src 'none'; manifest-src 'self'; worker-src 'self'">
 <meta name="description" content="OUTPOST: a single-file, browser-only reachability monitor for your own websites. Checks run in your browser, data stays in local storage, no telemetry.">
 <meta property="og:title" content="OUTPOST — a listening post for your websites">
 <meta property="og:description" content="Single-file, browser-only reachability monitor. No server, no account, no telemetry.">
@@ -2004,7 +2004,7 @@
         <p>Everything — the station list, the full check log, episodes, your settings — stays in this browser's local storage. Nothing is sent anywhere except the reachability checks to the stations you add (each station sees your IP address, like any visitor, and also gets a request for /favicon.ico) and, only if you switch them on, DNS lookups to Cloudflare's resolver and the Google/Cloudflare canary. "Contact" means only that something answered at the network level — an error page (404, 500, 502) also counts as Contact. The exported log contains your station list, notes and last-seen IP addresses: treat it as private. Export the log any time to back it up or move it to another browser; if this file is open in two tabs at once, they stay in sync automatically.</p>
       </div>
     </details>
-    <p class="credit">OUTPOST · single file, no dependencies, no telemetry · CC0 1.0</p>
+    <p class="credit">OUTPOST · single file, no dependencies, no telemetry · MIT</p>
     <p class="credit" id="app-version">v 1.1.0 · 2026-10-14</p>
   </footer>
 
@@ -3620,7 +3620,7 @@
       '<h1>Outpost</h1></div>' +
       '<p class="tagline">Static status snapshot \u2014 not live, generated ' + escapeHtml(generatedAt.toLocaleString()) + '</p></header>' +
       '<section class="site-list">' + (rows || '<div class="empty">No stations were logged at export time.</div>') + '</section>' +
-      '<footer><p class="credit">Snapshot from OUTPOST \u00b7 will not update itself \u00b7 re-export to refresh \u00b7 CC0</p></footer>' +
+      '<footer><p class="credit">Snapshot from OUTPOST \u00b7 will not update itself \u00b7 re-export to refresh \u00b7 MIT</p></footer>' +
       '</div></body></html>';
   }
 
