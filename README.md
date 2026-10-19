@@ -2,7 +2,9 @@
 
 **English** · [Română](README.ro.md) · [Français](README.fr.md) · [Italiano](README.it.md) · [Español](README.es.md) · [Português](README.pt.md) · [Deutsch](README.de.md) · [Magyar](README.hu.md)
 
-**Version:** 1.1.0 · **Last updated:** 2026-10-14
+**Version:** 1.2.0 · **Last updated:** 2026-10-19
+
+Interface languages: **Română, English, Français, Italiano, Español, Português (PT), Deutsch, Magyar**
 
 A listening post for your sites: a reachability monitor in a single HTML file that runs only in the browser.
 
@@ -14,7 +16,7 @@ A listening post for your sites: a reachability monitor in a single HTML file th
 
 OUTPOST checks, from your browser, whether the sites you add "respond", keeps the history of checks and outages and shows you a status per station ("Contact", "Silent", "Faint"). There is no server, account or telemetry; the list of stations and the log stay in your browser's `localStorage`. On first opening the list is empty (you can add three example stations with one click).
 
-The app's interface is in English.
+The app's interface has 8 languages (RO, EN, FR, IT, ES, PT, DE, HU).
 
 ## Features
 
@@ -36,7 +38,7 @@ Verified in the code and, where possible, in automated tests (headless Chromium,
 - **Status report**: "Report (.md)" and "Report (.csv)" export the table of stations (state, latency, uptime over 24 h / 7 days / 30 days computed over time, last check), the incidents of the last 30 days with their notes, and the runbook notes; "Print report" prepares a sheet for printing / PDF. The report **does not contain IP addresses**. CSV fields that could be interpreted as spreadsheet formulas are neutralised with an apostrophe.
 - **Tolerant "Find"**: besides the old literal match, it searches approximately (typos, diacritics ignored) and also in runbook notes and episode notes.
 - `.fff.json` backup (the shared module "fff-kit", local, no network): opened from the dialog that appears on clicking the version in the footer (export, password-encrypted export, import with confirmation, deletion of the app's data). The backup includes the key `outpost_state_v1`, so it **includes the resolved IP addresses**: treat it as private or export it encrypted.
-- The interface stays in English; there are no new translations to verify.
+- The interface has 8 languages (RO, EN, FR, IT, ES, PT, DE, HU); the translations are automatic and not verified by native speakers.
 
 ## User guide
 

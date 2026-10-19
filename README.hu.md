@@ -2,7 +2,9 @@
 
 [English](README.md) · [Română](README.ro.md) · [Français](README.fr.md) · [Italiano](README.it.md) · [Español](README.es.md) · [Português](README.pt.md) · [Deutsch](README.de.md) · **Magyar**
 
-**Verzió:** 1.1.0 · **Utolsó frissítés:** 2026-10-14
+**Verzió:** 1.2.0 · **Utolsó frissítés:** 2026-10-19
+
+A felület nyelvei: **Română, English, Français, Italiano, Español, Português (PT), Deutsch, Magyar**
 
 Figyelőállomás a webhelyeidhez: elérhetőségi (reachability) monitor egyetlen HTML-fájlban, amely kizárólag a böngészőben fut.
 
@@ -14,7 +16,7 @@ Figyelőállomás a webhelyeidhez: elérhetőségi (reachability) monitor egyetl
 
 Az OUTPOST a böngésződből ellenőrzi, hogy a hozzáadott webhelyek „válaszolnak-e”, megőrzi az ellenőrzések és a kiesések előzményeit, és állomásonként mutat egy állapotot („Contact”, „Silent”, „Faint”). Nincs szerver, fiók vagy telemetria; az állomások listája és a napló a böngésződ `localStorage`-ában marad. Az első megnyitáskor a lista üres (egy kattintással hozzáadhatsz három példaállomást).
 
-Az alkalmazás felülete angol nyelvű.
+Az alkalmazás felülete 8 nyelvű (RO, EN, FR, IT, ES, PT, DE, HU).
 
 ## Funkciók
 
@@ -36,7 +38,7 @@ A kódban, és ahol lehetséges, automatizált tesztekben ellenőrizve (headless
 - **Állapotjelentés**: a „Report (.md)” és a „Report (.csv)” exportálja az állomások táblázatát (állapot, késleltetés, 24 órás / 7 napos / 30 napos rendelkezésre állás időben számolva, utolsó ellenőrzés), az elmúlt 30 nap incidenseit megjegyzéseikkel, valamint a runbook-megjegyzéseket; a „Print report” nyomtatásra / PDF-re előkészít egy lapot. A jelentés **nem tartalmaz IP-címeket**. Azokat a CSV-mezőket, amelyeket táblázatkezelő-képletként lehetne értelmezni, aposztróf semlegesíti.
 - **Toleráns „Find”**: a korábbi szó szerinti egyezés mellett hozzávetőlegesen is keres (elírások, ékezetek figyelmen kívül hagyva), és a runbook-megjegyzésekben és az epizódmegjegyzésekben is.
 - `.fff.json` biztonsági mentés (a közös „fff-kit” modul, helyi, hálózat nélkül): a láblécben a verzióra kattintva megjelenő párbeszédablakból nyílik (export, jelszóval titkosított export, import megerősítéssel, az alkalmazás adatainak törlése). A mentés tartalmazza az `outpost_state_v1` kulcsot, tehát **tartalmazza a feloldott IP-címeket is**: kezeld magánjellegűként, vagy titkosítva exportáld.
-- A felület angol marad; nincsenek új, ellenőrizendő fordítások.
+- A felület 8 nyelvű (RO, EN, FR, IT, ES, PT, DE, HU); a fordítások gépiek, és anyanyelvi beszélők nem ellenőrizték őket.
 
 ## Használati útmutató
 

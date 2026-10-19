@@ -2,7 +2,9 @@
 
 [English](README.md) · [Română](README.ro.md) · **Français** · [Italiano](README.it.md) · [Español](README.es.md) · [Português](README.pt.md) · [Deutsch](README.de.md) · [Magyar](README.hu.md)
 
-**Version :** 1.1.0 · **Dernière mise à jour :** 2026-10-14
+**Version :** 1.2.0 · **Dernière mise à jour :** 2026-10-19
+
+Langues de l'interface : **Română, English, Français, Italiano, Español, Português (PT), Deutsch, Magyar**
 
 Poste d'écoute pour vos sites : un moniteur d'accessibilité (reachability) dans un seul fichier HTML, qui s'exécute uniquement dans le navigateur.
 
@@ -14,7 +16,7 @@ Poste d'écoute pour vos sites : un moniteur d'accessibilité (reachability) dan
 
 OUTPOST vérifie, depuis votre navigateur, si les sites que vous ajoutez « répondent », conserve l'historique des vérifications et des pannes et vous montre un statut par station (« Contact », « Silent », « Faint »). Il n'y a ni serveur, ni compte, ni télémétrie ; la liste des stations et le journal restent dans le `localStorage` de votre navigateur. À la première ouverture, la liste est vide (vous pouvez ajouter trois stations d'exemple en un clic).
 
-L'interface de l'application est en anglais.
+L'interface de l'application compte 8 langues (RO, EN, FR, IT, ES, PT, DE, HU).
 
 ## Fonctionnalités
 
@@ -36,7 +38,7 @@ Vérifié dans le code et, lorsque c'est possible, dans des tests automatisés (
 - **Rapport d'état** : « Report (.md) » et « Report (.csv) » exportent le tableau des stations (état, latence, disponibilité sur 24 h / 7 jours / 30 jours calculée dans le temps, dernière vérification), les incidents des 30 derniers jours avec leurs notes et les notes de runbook ; « Print report » prépare une feuille pour l'impression / PDF. Le rapport **ne contient pas d'adresses IP**. Les champs CSV qui pourraient être interprétés comme des formules de tableur sont neutralisés par une apostrophe.
 - **« Find » tolérant** : en plus de la correspondance littérale précédente, recherche approximative (fautes de frappe, diacritiques ignorés) et aussi dans les notes de runbook et les notes d'épisodes.
 - Sauvegarde `.fff.json` (module commun « fff-kit », local, sans réseau) : s'ouvre depuis la boîte de dialogue qui apparaît au clic sur la version dans le pied de page (export, export chiffré par mot de passe, import avec confirmation, suppression des données de l'application). La sauvegarde inclut la clé `outpost_state_v1`, donc elle **inclut les adresses IP résolues** : traitez-la comme privée ou exportez-la chiffrée.
-- L'interface reste en anglais ; il n'y a pas de nouvelles traductions à vérifier.
+- L'interface compte 8 langues (RO, EN, FR, IT, ES, PT, DE, HU) ; les traductions sont automatiques et non vérifiées par des locuteurs natifs.
 
 ## Mode d'emploi
 

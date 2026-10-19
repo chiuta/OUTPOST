@@ -2,7 +2,9 @@
 
 [English](README.md) · [Română](README.ro.md) · [Français](README.fr.md) · [Italiano](README.it.md) · [Español](README.es.md) · [Português](README.pt.md) · **Deutsch** · [Magyar](README.hu.md)
 
-**Version:** 1.1.0 · **Zuletzt aktualisiert:** 2026-10-14
+**Version:** 1.2.0 · **Zuletzt aktualisiert:** 2026-10-19
+
+Oberflächensprachen: **Română, English, Français, Italiano, Español, Português (PT), Deutsch, Magyar**
 
 Ein Horchposten für deine Websites: ein Erreichbarkeitsmonitor (Reachability) in einer einzigen HTML-Datei, der nur im Browser läuft.
 
@@ -14,7 +16,7 @@ Ein Horchposten für deine Websites: ein Erreichbarkeitsmonitor (Reachability) i
 
 OUTPOST prüft aus deinem Browser, ob die von dir hinzugefügten Websites „antworten“, führt die Historie der Prüfungen und Ausfälle und zeigt dir einen Status pro Station („Contact“, „Silent“, „Faint“). Es gibt keinen Server, kein Konto und keine Telemetrie; die Liste der Stationen und das Protokoll bleiben im `localStorage` deines Browsers. Beim ersten Öffnen ist die Liste leer (mit einem Klick kannst du drei Beispielstationen hinzufügen).
 
-Die Oberfläche der Anwendung ist auf Englisch.
+Die Oberfläche der Anwendung hat 8 Sprachen (RO, EN, FR, IT, ES, PT, DE, HU).
 
 ## Funktionen
 
@@ -36,7 +38,7 @@ Im Code und, wo möglich, in automatisierten Tests geprüft (Headless-Chromium, 
 - **Statusbericht**: „Report (.md)“ und „Report (.csv)“ exportieren die Tabelle der Stationen (Zustand, Latenz, Uptime über 24 h / 7 Tage / 30 Tage zeitgewichtet berechnet, letzte Prüfung), die Vorfälle der letzten 30 Tage mit ihren Notizen und die Runbook-Notizen; „Print report“ bereitet ein Blatt für Druck / PDF vor. Der Bericht **enthält keine IP-Adressen**. CSV-Felder, die als Tabellenkalkulationsformeln interpretiert werden könnten, werden durch ein Apostroph entschärft.
 - **Tolerantes „Find“**: Neben dem bisherigen wörtlichen Treffer sucht es unscharf (Tippfehler, Diakritika ignoriert) und auch in Runbook-Notizen und Episodennotizen.
 - `.fff.json`-Sicherung (gemeinsames Modul „fff-kit“, lokal, ohne Netzwerk): wird über den Dialog geöffnet, der beim Klick auf die Version in der Fußzeile erscheint (Export, passwortverschlüsselter Export, Import mit Bestätigung, Löschen der App-Daten). Die Sicherung enthält den Schlüssel `outpost_state_v1`, **schließt also die aufgelösten IP-Adressen ein**: Behandle sie als privat oder exportiere sie verschlüsselt.
-- Die Oberfläche bleibt auf Englisch; es gibt keine neuen Übersetzungen zu prüfen.
+- Die Oberfläche hat 8 Sprachen (RO, EN, FR, IT, ES, PT, DE, HU); die Übersetzungen sind automatisch und nicht von Muttersprachlern geprüft.
 
 ## Bedienungsanleitung
 

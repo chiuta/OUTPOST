@@ -2,7 +2,9 @@
 
 [English](README.md) · [Română](README.ro.md) · [Français](README.fr.md) · **Italiano** · [Español](README.es.md) · [Português](README.pt.md) · [Deutsch](README.de.md) · [Magyar](README.hu.md)
 
-**Versione:** 1.1.0 · **Ultimo aggiornamento:** 2026-10-14
+**Versione:** 1.2.0 · **Ultimo aggiornamento:** 2026-10-19
+
+Lingue dell'interfaccia: **Română, English, Français, Italiano, Español, Português (PT), Deutsch, Magyar**
 
 Postazione di ascolto per i tuoi siti: un monitor di raggiungibilità (reachability) in un unico file HTML, che funziona solo nel browser.
 
@@ -14,7 +16,7 @@ Postazione di ascolto per i tuoi siti: un monitor di raggiungibilità (reachabil
 
 OUTPOST verifica, dal tuo browser, se i siti che aggiungi «rispondono», conserva la cronologia dei controlli e dei disservizi e ti mostra uno stato per ogni stazione («Contact», «Silent», «Faint»). Non ci sono server, account o telemetria; l'elenco delle stazioni e il registro restano nel `localStorage` del tuo browser. Alla prima apertura l'elenco è vuoto (puoi aggiungere tre stazioni di esempio con un clic).
 
-L'interfaccia dell'applicazione è in inglese.
+L'interfaccia dell'applicazione ha 8 lingue (RO, EN, FR, IT, ES, PT, DE, HU).
 
 ## Funzionalità
 
@@ -36,7 +38,7 @@ Verificato nel codice e, dove possibile, in test automatici (Chromium headless, 
 - **Rapporto di stato**: «Report (.md)» e «Report (.csv)» esportano la tabella delle stazioni (stato, latenza, uptime a 24 h / 7 giorni / 30 giorni calcolato nel tempo, ultimo controllo), gli incidenti degli ultimi 30 giorni con le relative note e le note di runbook; «Print report» prepara un foglio per la stampa / PDF. Il rapporto **non contiene indirizzi IP**. I campi CSV che potrebbero essere interpretati come formule di foglio di calcolo sono neutralizzati con un apostrofo.
 - **«Find» tollerante**: oltre alla precedente corrispondenza letterale, cerca in modo approssimato (errori di battitura, segni diacritici ignorati) e anche nelle note di runbook e nelle note degli episodi.
 - Copia di riserva `.fff.json` (modulo comune «fff-kit», locale, senza rete): si apre dalla finestra che appare facendo clic sulla versione nel piè di pagina (esportazione, esportazione cifrata con password, importazione con conferma, cancellazione dei dati dell'applicazione). La copia comprende la chiave `outpost_state_v1`, quindi **include gli indirizzi IP risolti**: trattala come privata o esportala cifrata.
-- L'interfaccia resta in inglese; non ci sono nuove traduzioni da verificare.
+- L'interfaccia ha 8 lingue (RO, EN, FR, IT, ES, PT, DE, HU); le traduzioni sono automatiche e non verificate da madrelingua.
 
 ## Guida all'uso
 

@@ -2,7 +2,9 @@
 
 [English](README.md) · **Română** · [Français](README.fr.md) · [Italiano](README.it.md) · [Español](README.es.md) · [Português](README.pt.md) · [Deutsch](README.de.md) · [Magyar](README.hu.md)
 
-**Versiune:** 1.1.0 · **Ultima actualizare:** 2026-10-14
+**Versiune:** 1.2.0 · **Ultima actualizare:** 2026-10-19
+
+Limbile interfeței: **Română, English, Français, Italiano, Español, Português (PT), Deutsch, Magyar**
 
 Post de ascultare pentru site-urile tale: un monitor de accesibilitate (reachability) într-un singur fișier HTML, care rulează numai în browser.
 
@@ -14,7 +16,7 @@ Post de ascultare pentru site-urile tale: un monitor de accesibilitate (reachabi
 
 OUTPOST verifică, din browserul tău, dacă site-urile pe care le adaugi „răspund”, păstrează istoricul verificărilor și al căderilor și îți arată un status pe stație („Contact”, „Silent”, „Faint”). Nu există server, cont sau telemetrie; lista de stații și jurnalul rămân în `localStorage`-ul browserului tău. La prima deschidere lista este goală (poți adăuga trei stații-exemplu cu un clic).
 
-Interfața aplicației este în limba engleză.
+Interfața aplicației are 8 limbi (RO, EN, FR, IT, ES, PT, DE, HU).
 
 ## Funcții
 
@@ -36,7 +38,7 @@ Verificate în cod și, unde se poate, în teste automate (Chromium headless, re
 - **Raport de stare**: „Report (.md)” și „Report (.csv)” exportă tabelul stațiilor (stare, latență, uptime pe 24 h / 7 zile / 30 de zile calculat pe timp, ultima verificare), incidentele din ultimele 30 de zile cu notele lor și notele de runbook; „Print report” pregătește o foaie pentru tipărire / PDF. Raportul **nu conține adrese IP**. Câmpurile CSV care ar putea fi interpretate ca formule de foaie de calcul sunt neutralizate cu apostrof.
 - **„Find” tolerant**: pe lângă potrivirea literală veche, caută aproximativ (greșeli de scriere, diacritice ignorate) și în notele de runbook și notele episoadelor.
 - Copie de siguranță `.fff.json` (modul comun „fff-kit”, local, fără rețea): se deschide din dialogul care apare la clic pe versiunea din subsol (export, export criptat cu parolă, import cu confirmare, ștergerea datelor aplicației). Copia cuprinde cheia `outpost_state_v1`, deci **include adresele IP rezolvate**: tratează-o ca privată sau exportă-o criptată.
-- Interfața rămâne în engleză; nu există traduceri noi de verificat.
+- Interfața are 8 limbi (RO, EN, FR, IT, ES, PT, DE, HU); traducerile sunt automate și neverificate de vorbitori nativi.
 
 ## Manual de utilizare
 
