@@ -10,7 +10,7 @@ Postazione di ascolto per i tuoi siti: un monitor di raggiungibilità (reachabil
 
 **Applicazione online:** https://chiuta.github.io/OUTPOST/
 
-![Schermata](screenshot.png)
+![Schermata](screenshot.it.png)
 
 ## Che cos'è
 

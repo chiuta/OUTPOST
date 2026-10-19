@@ -10,7 +10,7 @@ Poste d'écoute pour vos sites : un moniteur d'accessibilité (reachability) dan
 
 **Application en ligne :** https://chiuta.github.io/OUTPOST/
 
-![Capture d'écran](screenshot.png)
+![Capture d'écran](screenshot.fr.png)
 
 ## De quoi s'agit-il
 

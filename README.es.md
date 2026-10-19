@@ -10,7 +10,7 @@ Puesto de escucha para tus sitios: un monitor de accesibilidad (reachability) en
 
 **Aplicación en línea:** https://chiuta.github.io/OUTPOST/
 
-![Captura de pantalla](screenshot.png)
+![Captura de pantalla](screenshot.es.png)
 
 ## Qué es
 

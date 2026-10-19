@@ -10,7 +10,7 @@ Figyelőállomás a webhelyeidhez: elérhetőségi (reachability) monitor egyetl
 
 **Online alkalmazás:** https://chiuta.github.io/OUTPOST/
 
-![Képernyőkép](screenshot.png)
+![Képernyőkép](screenshot.hu.png)
 
 ## Mi ez
 

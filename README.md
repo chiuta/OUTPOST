@@ -10,7 +10,7 @@ A listening post for your sites: a reachability monitor in a single HTML file th
 
 **Live app:** https://chiuta.github.io/OUTPOST/
 
-![Screenshot](screenshot.png)
+![Screenshot](screenshot.en.png)
 
 ## What it is
 

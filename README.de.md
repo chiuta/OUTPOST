@@ -10,7 +10,7 @@ Ein Horchposten für deine Websites: ein Erreichbarkeitsmonitor (Reachability) i
 
 **Online-Anwendung:** https://chiuta.github.io/OUTPOST/
 
-![Screenshot](screenshot.png)
+![Screenshot](screenshot.de.png)
 
 ## Was es ist
 

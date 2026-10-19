@@ -10,7 +10,7 @@ Post de ascultare pentru site-urile tale: un monitor de accesibilitate (reachabi
 
 **Live:** https://chiuta.github.io/OUTPOST/
 
-![Captura de ecran](screenshot.png)
+![Captura de ecran](screenshot.ro.png)
 
 ## Ce este
 

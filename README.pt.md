@@ -10,7 +10,7 @@ Posto de escuta para os seus sites: um monitor de acessibilidade (reachability) 
 
 **Aplicação online:** https://chiuta.github.io/OUTPOST/
 
-![Captura de ecrã](screenshot.png)
+![Captura de ecrã](screenshot.pt.png)
 
 ## O que é
 
