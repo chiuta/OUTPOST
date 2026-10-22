@@ -2,7 +2,7 @@
 
 [English](README.md) · [Română](README.ro.md) · [Français](README.fr.md) · [Italiano](README.it.md) · **Español** · [Português](README.pt.md) · [Deutsch](README.de.md) · [Magyar](README.hu.md)
 
-**Versión:** 1.2.2 · **Última actualización:** 2026-10-22
+**Versión:** 1.2.3 · **Última actualización:** 2026-10-22
 
 Idiomas de la interfaz: **Română, English, Français, Italiano, Español, Português (PT), Deutsch, Magyar**
 
@@ -83,6 +83,9 @@ Alexio — Alexandru-Ionuț Chiuță, contacto: alexio@trom.tf
 OUTPOST es un monitor de accesibilidad de un solo archivo, solo en el navegador (sin servidor, sin cuenta, sin telemetría). Una instalación nueva no contacta con nada; solo sondea las estaciones que añades (solicitud HEAD no-cors más /favicon.ico). Opcionales, desactivados por defecto: consultas Cloudflare DNS-over-HTTPS y un canary Google/Cloudflare. «Contact» solo significa que algo respondió; no puede leer los códigos de estado HTTP. El estado reside en localStorage; los archivos importados se validan. Licencia MIT.
 
 ## Historial / Changelog
+
+### 1.2.3 — 2026-10-22
+- fff-kit 1.1.2: PBKDF2 con 600.000 iteraciones, protección anti-clickjacking
 
 ### 1.2.2 — 2026-10-22
 - Validación de direcciones: se rechazan las notaciones IP no canónicas (0x7f000001, 2130706433…) y las direcciones privadas, de bucle local, link-local o de intranet piden confirmación antes de sondearse; la misma comprobación se aplica al importar un registro.

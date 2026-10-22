@@ -50,9 +50,9 @@ console.log('— metadate și kit');
 {
   const {ctx, page, errs, net} = await open();
   const meta = await page.evaluate(() => ({v: document.querySelector('meta[name=application-version]').content, d: document.querySelector('meta[name=last-updated]').content, ft: document.getElementById('app-version').textContent, mods: document.querySelector('meta[name=fff-modules]')?.content, ffs: !!(window.FFF && FFF.search && FFF.bundle && FFF.label)}));
-  check('versiune 1.2.2 în meta', meta.v === '1.2.2', meta);
+  check('versiune 1.2.3 în meta', meta.v === '1.2.3', meta);
   check('data 2026-10-22', meta.d === '2026-10-22');
-  check('footer', meta.ft === 'v 1.2.2 · 2026-10-22', meta.ft);
+  check('footer', meta.ft === 'v 1.2.3 · 2026-10-22', meta.ft);
   check('module kit', meta.mods === 'core,label,bundle,search', meta.mods);
   check('FFF.search/bundle/label prezente', meta.ffs);
   check('3 stații randate', await page.locator('.station').count() === 3, await page.locator('.station').count());
