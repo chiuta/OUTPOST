@@ -2,7 +2,7 @@
 
 [English](README.md) · [Română](README.ro.md) · [Français](README.fr.md) · **Italiano** · [Español](README.es.md) · [Português](README.pt.md) · [Deutsch](README.de.md) · [Magyar](README.hu.md)
 
-**Versione:** 1.2.3 · **Ultimo aggiornamento:** 2026-10-22
+**Versione:** 1.2.4 · **Ultimo aggiornamento:** 2026-10-22
 
 Lingue dell'interfaccia: **Română, English, Français, Italiano, Español, Português (PT), Deutsch, Magyar**
 
@@ -83,6 +83,10 @@ Alexio — Alexandru-Ionuț Chiuță, contatto: alexio@trom.tf
 OUTPOST è un monitor di raggiungibilità in un unico file, solo nel browser (senza server, senza account, senza telemetria). Una nuova installazione non contatta nulla; sonda solo le stazioni che aggiungi (richiesta HEAD no-cors più /favicon.ico). Facoltativi, disattivati per impostazione predefinita: risoluzioni Cloudflare DNS-over-HTTPS e un canary Google/Cloudflare. «Contact» significa solo che qualcosa ha risposto; non può leggere i codici di stato HTTP. Lo stato risiede in localStorage; i file importati vengono validati. Licenza MIT.
 
 ## Cronologia / Changelog
+
+### 1.2.4 — 2026-10-22
+
+fff-kit 1.1.4: target touch e dimensione minima del testo; target touch e testo corretti.
 
 ### 1.2.3 — 2026-10-22
 - fff-kit 1.1.2: PBKDF2 con 600.000 iterazioni, protezione anti-clickjacking

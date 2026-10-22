@@ -2,7 +2,7 @@
 
 [English](README.md) · [Română](README.ro.md) · [Français](README.fr.md) · [Italiano](README.it.md) · [Español](README.es.md) · [Português](README.pt.md) · [Deutsch](README.de.md) · **Magyar**
 
-**Verzió:** 1.2.3 · **Utolsó frissítés:** 2026-10-22
+**Verzió:** 1.2.4 · **Utolsó frissítés:** 2026-10-22
 
 A felület nyelvei: **Română, English, Français, Italiano, Español, Português (PT), Deutsch, Magyar**
 
@@ -83,6 +83,10 @@ Alexio — Alexandru-Ionuț Chiuță, kapcsolat: alexio@trom.tf
 Az OUTPOST egyetlen fájlból álló, kizárólag böngészőben futó elérhetőségi monitor (szerver, fiók és telemetria nélkül). Egy friss telepítés semmivel nem veszi fel a kapcsolatot; csak az általad hozzáadott állomásokat vizsgálja (HEAD no-cors kérés plusz /favicon.ico). Opcionális, alapértelmezetten kikapcsolva: Cloudflare DNS-over-HTTPS lekérdezések és egy Google/Cloudflare canary. A „Contact” csak azt jelenti, hogy valami válaszolt; a HTTP-állapotkódokat nem tudja kiolvasni. Az állapot a localStorage-ban él; az importált fájlokat érvényesíti. MIT licenc.
 
 ## Előzmények / Changelog
+
+### 1.2.4 — 2026-10-22
+
+fff-kit 1.1.4: érintési célok és minimális szövegméret; érintési célok és szöveg javítva.
 
 ### 1.2.3 — 2026-10-22
 - fff-kit 1.1.2: PBKDF2 600 000 iterációval, clickjacking elleni védelem

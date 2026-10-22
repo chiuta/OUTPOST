@@ -2,7 +2,7 @@
 
 [English](README.md) · **Română** · [Français](README.fr.md) · [Italiano](README.it.md) · [Español](README.es.md) · [Português](README.pt.md) · [Deutsch](README.de.md) · [Magyar](README.hu.md)
 
-**Versiune:** 1.2.3 · **Ultima actualizare:** 2026-10-22
+**Versiune:** 1.2.4 · **Ultima actualizare:** 2026-10-22
 
 Limbile interfeței: **Română, English, Français, Italiano, Español, Português (PT), Deutsch, Magyar**
 
@@ -83,6 +83,10 @@ Alexio — Alexandru-Ionuț Chiuță, contact: alexio@trom.tf
 OUTPOST este un monitor de accesibilitate doar în browser, într-un singur fișier (fără server, fără cont, fără telemetrie). O instalare nouă nu contactează nimic; sondează doar stațiile pe care le adaugi (cerere HEAD no-cors plus /favicon.ico). Opționale, dezactivate implicit: interogări Cloudflare DNS-over-HTTPS și un canar Google/Cloudflare. „Contact” înseamnă doar că ceva a răspuns; nu poate citi codurile de stare HTTP. Starea se păstrează în localStorage; fișierele importate sunt validate. Licență MIT.
 
 ## Istoric / Changelog
+
+### 1.2.4 — 2026-10-22
+
+fff-kit 1.1.4: ținte tactile și text minim; ținte tactile/text corectate.
 
 ### 1.2.3 — 2026-10-22
 - fff-kit 1.1.2: PBKDF2 600 000 iterații, protecție anti-clickjacking
