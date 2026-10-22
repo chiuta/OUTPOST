@@ -2,7 +2,7 @@
 
 [English](README.md) · [Română](README.ro.md) · [Français](README.fr.md) · [Italiano](README.it.md) · [Español](README.es.md) · **Português** · [Deutsch](README.de.md) · [Magyar](README.hu.md)
 
-**Versão:** 1.2.1 · **Última atualização:** 2026-10-19
+**Versão:** 1.2.2 · **Última atualização:** 2026-10-22
 
 Idiomas da interface: **Română, English, Français, Italiano, Español, Português (PT), Deutsch, Magyar**
 
@@ -83,6 +83,12 @@ Alexio — Alexandru-Ionuț Chiuță, contacto: alexio@trom.tf
 O OUTPOST é um monitor de acessibilidade de ficheiro único, apenas no navegador (sem servidor, sem conta, sem telemetria). Uma instalação nova não contacta nada; só sonda as estações que adicionar (pedido HEAD no-cors mais /favicon.ico). Opcionais, desativados por predefinição: consultas Cloudflare DNS-over-HTTPS e um canary Google/Cloudflare. «Contact» significa apenas que algo respondeu; não consegue ler códigos de estado HTTP. O estado reside no localStorage; os ficheiros importados são validados. Licença MIT.
 
 ## Histórico / Changelog
+
+### 1.2.2 — 2026-10-22
+- Validação de endereços: as notações IP não canónicas (0x7f000001, 2130706433…) são rejeitadas e os endereços privados, de loopback, link-local ou de intranet pedem confirmação antes de serem sondados; a mesma verificação aplica-se ao importar um registo.
+- As caixas nativas prompt()/confirm() foram substituídas por diálogos acessíveis e traduzidos (notas, nova categoria/subcategoria, limpeza, importação: substituir ou combinar).
+- Uma nota junto à definição das notificações indica que a monitorização só funciona enquanto o separador estiver aberto.
+- Telemóvel: nenhum texto abaixo de 12 px e áreas táteis de pelo menos 24 px (WCAG 2.5.8).
 
 ### 14 de outubro de 2026 (v1.1.0)
 - Relatório de estado (.md, .csv, impressão / PDF) e «Find» aproximado (FFF.search), incluindo nas notas de runbook e de episódios.

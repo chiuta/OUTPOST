@@ -2,7 +2,7 @@
 
 [English](README.md) · [Română](README.ro.md) · [Français](README.fr.md) · [Italiano](README.it.md) · [Español](README.es.md) · [Português](README.pt.md) · [Deutsch](README.de.md) · **Magyar**
 
-**Verzió:** 1.2.1 · **Utolsó frissítés:** 2026-10-19
+**Verzió:** 1.2.2 · **Utolsó frissítés:** 2026-10-22
 
 A felület nyelvei: **Română, English, Français, Italiano, Español, Português (PT), Deutsch, Magyar**
 
@@ -83,6 +83,12 @@ Alexio — Alexandru-Ionuț Chiuță, kapcsolat: alexio@trom.tf
 Az OUTPOST egyetlen fájlból álló, kizárólag böngészőben futó elérhetőségi monitor (szerver, fiók és telemetria nélkül). Egy friss telepítés semmivel nem veszi fel a kapcsolatot; csak az általad hozzáadott állomásokat vizsgálja (HEAD no-cors kérés plusz /favicon.ico). Opcionális, alapértelmezetten kikapcsolva: Cloudflare DNS-over-HTTPS lekérdezések és egy Google/Cloudflare canary. A „Contact” csak azt jelenti, hogy valami válaszolt; a HTTP-állapotkódokat nem tudja kiolvasni. Az állapot a localStorage-ban él; az importált fájlokat érvényesíti. MIT licenc.
 
 ## Előzmények / Changelog
+
+### 1.2.2 — 2026-10-22
+- Címellenőrzés: a nem kanonikus IP-jelöléseket (0x7f000001, 2130706433…) elutasítja, a privát, visszacsatolási, link-local vagy intranetes címek pedig megerősítést kérnek a szondázás előtt; ugyanez az ellenőrzés fut naplóimportáláskor is.
+- A natív prompt()/confirm() ablakokat akadálymentes, lefordított párbeszédablakok váltották fel (jegyzetek, új kategória/alkategória, törlés, import: csere vagy egyesítés).
+- A értesítési beállítás melletti megjegyzés jelzi, hogy a figyelés csak addig fut, amíg a lap nyitva van.
+- Mobil: nincs 12 px alatti szöveg, az érintési célpontok legalább 24 px-esek (WCAG 2.5.8).
 
 ### 2026. október 14. (v1.1.0)
 - Állapotjelentés (.md, .csv, nyomtatás / PDF) és hozzávetőleges „Find” (FFF.search), a runbook- és epizódmegjegyzésekben is.

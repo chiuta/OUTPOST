@@ -2,7 +2,7 @@
 
 [English](README.md) · [Română](README.ro.md) · [Français](README.fr.md) · [Italiano](README.it.md) · [Español](README.es.md) · [Português](README.pt.md) · **Deutsch** · [Magyar](README.hu.md)
 
-**Version:** 1.2.1 · **Zuletzt aktualisiert:** 2026-10-19
+**Version:** 1.2.2 · **Zuletzt aktualisiert:** 2026-10-22
 
 Oberflächensprachen: **Română, English, Français, Italiano, Español, Português (PT), Deutsch, Magyar**
 
@@ -83,6 +83,12 @@ Alexio — Alexandru-Ionuț Chiuță, Kontakt: alexio@trom.tf
 OUTPOST ist ein Erreichbarkeitsmonitor in einer einzigen Datei, nur im Browser (kein Server, kein Konto, keine Telemetrie). Eine frische Installation kontaktiert nichts; sie prüft nur die von dir hinzugefügten Stationen (HEAD-no-cors-Anfrage plus /favicon.ico). Optional, standardmäßig aus: Cloudflare-DNS-over-HTTPS-Abfragen und ein Google/Cloudflare-Canary. „Contact“ bedeutet nur, dass etwas geantwortet hat; HTTP-Statuscodes kann es nicht lesen. Der Zustand liegt in localStorage; importierte Dateien werden validiert. MIT-Lizenz.
 
 ## Verlauf / Changelog
+
+### 1.2.2 — 2026-10-22
+- Adressprüfung: Nicht-kanonische IP-Schreibweisen (0x7f000001, 2130706433 …) werden abgelehnt, und private, Loopback-, Link-Local- oder Intranet-Adressen verlangen vor dem Abfragen eine Bestätigung; dieselbe Prüfung gilt beim Import eines Protokolls.
+- Die nativen prompt()/confirm()-Dialoge wurden durch barrierefreie, übersetzte Dialoge ersetzt (Notizen, neue Kategorie/Unterkategorie, Löschen, Import: ersetzen oder zusammenführen).
+- Ein Hinweis neben der Benachrichtigungs-Einstellung sagt, dass die Überwachung nur läuft, solange der Tab geöffnet bleibt.
+- Mobil: kein Text unter 12 px und Touch-Ziele von mindestens 24 px (WCAG 2.5.8).
 
 ### 14. Oktober 2026 (v1.1.0)
 - Statusbericht (.md, .csv, Druck / PDF) und unscharfes „Find“ (FFF.search), auch in Runbook- und Episodennotizen.

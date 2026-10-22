@@ -2,7 +2,7 @@
 
 [English](README.md) · **Română** · [Français](README.fr.md) · [Italiano](README.it.md) · [Español](README.es.md) · [Português](README.pt.md) · [Deutsch](README.de.md) · [Magyar](README.hu.md)
 
-**Versiune:** 1.2.1 · **Ultima actualizare:** 2026-10-19
+**Versiune:** 1.2.2 · **Ultima actualizare:** 2026-10-22
 
 Limbile interfeței: **Română, English, Français, Italiano, Español, Português (PT), Deutsch, Magyar**
 
@@ -83,6 +83,12 @@ Alexio — Alexandru-Ionuț Chiuță, contact: alexio@trom.tf
 OUTPOST este un monitor de accesibilitate doar în browser, într-un singur fișier (fără server, fără cont, fără telemetrie). O instalare nouă nu contactează nimic; sondează doar stațiile pe care le adaugi (cerere HEAD no-cors plus /favicon.ico). Opționale, dezactivate implicit: interogări Cloudflare DNS-over-HTTPS și un canar Google/Cloudflare. „Contact” înseamnă doar că ceva a răspuns; nu poate citi codurile de stare HTTP. Starea se păstrează în localStorage; fișierele importate sunt validate. Licență MIT.
 
 ## Istoric / Changelog
+
+### 1.2.2 — 2026-10-22
+- Validarea adreselor: notațiile IP necanonice (0x7f000001, 2130706433…) sunt respinse, iar adresele private, de loopback, link-local sau de intranet cer acum confirmare înainte de a fi sondate; aceeași verificare rulează la importul unui jurnal.
+- Casetele native prompt()/confirm() au fost înlocuite cu dialoguri accesibile, traduse (note, categorie/subcategorie nouă, ștergere, import: înlocuire sau îmbinare).
+- O notă lângă setarea notificărilor spune că monitorizarea rulează doar cât timp fila rămâne deschisă.
+- Mobil: niciun text sub 12 px și ținte tactile de cel puțin 24 px (WCAG 2.5.8).
 
 ### 14 octombrie 2026 (v1.1.0)
 - Raport de stare (.md, .csv, tipărire / PDF) și „Find” aproximativ (FFF.search), inclusiv în notele de runbook și ale episoadelor.

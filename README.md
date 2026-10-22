@@ -2,7 +2,7 @@
 
 **English** · [Română](README.ro.md) · [Français](README.fr.md) · [Italiano](README.it.md) · [Español](README.es.md) · [Português](README.pt.md) · [Deutsch](README.de.md) · [Magyar](README.hu.md)
 
-**Version:** 1.2.1 · **Last updated:** 2026-10-19
+**Version:** 1.2.2 · **Last updated:** 2026-10-22
 
 Interface languages: **Română, English, Français, Italiano, Español, Português (PT), Deutsch, Magyar**
 
@@ -83,6 +83,12 @@ Alexio — Alexandru-Ionuț Chiuță, contact: alexio@trom.tf
 OUTPOST is a single-file, browser-only reachability monitor (no server, no account, no telemetry). A fresh install contacts nothing; it only probes the stations you add (HEAD no-cors request plus /favicon.ico). Optional, off by default: Cloudflare DNS-over-HTTPS lookups and a Google/Cloudflare canary. "Contact" only means that something answered; it cannot read HTTP status codes. State lives in localStorage; imported files are validated. MIT licence.
 
 ## History / Changelog
+
+### 1.2.2 — 2026-10-22
+- Address validation: non-canonical IP notations (0x7f000001, 2130706433…) are rejected, and private, loopback, link-local or intranet addresses now ask for confirmation before being probed; the same check runs when importing a log.
+- The native prompt()/confirm() boxes were replaced by accessible, translated dialogs (notes, new category/subcategory, clearing, import: replace or merge).
+- A note next to the notification setting says monitoring only runs while the tab stays open.
+- Mobile: no text below 12 px and touch targets of at least 24 px (WCAG 2.5.8).
 
 ### 14 October 2026 (v1.1.0)
 - Status report (.md, .csv, print / PDF) and approximate "Find" (FFF.search), including in runbook notes and episode notes.
