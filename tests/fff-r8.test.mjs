@@ -53,7 +53,7 @@ console.log('— metadate și kit');
   check('versiune 1.2.5 în meta', meta.v === '1.2.5', meta);
   check('data 2026-10-23', meta.d === '2026-10-23');
   check('footer', meta.ft === 'v 1.2.5 · 2026-10-23', meta.ft);
-  check('module kit', meta.mods === 'core,label,bundle,search', meta.mods);
+  check('module kit', meta.mods === 'core,store,dialog,label,bundle,search', meta.mods);
   check('FFF.search/bundle/label prezente', meta.ffs);
   check('3 stații randate', await page.locator('.station').count() === 3, await page.locator('.station').count());
 
