@@ -2,7 +2,7 @@
 
 **English** · [Română](README.ro.md) · [Français](README.fr.md) · [Italiano](README.it.md) · [Español](README.es.md) · [Português](README.pt.md) · [Deutsch](README.de.md) · [Magyar](README.hu.md)
 
-**Version:** 1.2.6 · **Last updated:** 2026-10-26
+**Version:** 2.0.0 · **Last updated:** 2026-10-26
 
 Interface languages: **Română, English, Français, Italiano, Español, Português (PT), Deutsch, Magyar**
 
@@ -32,6 +32,8 @@ Verified in the code and, where possible, in automated tests (headless Chromium,
 - Validation with precise messages under the URL field (spaces, unsupported scheme, invalid host); what you typed stays in the field if the address is rejected or duplicated.
 - Print style: when printing, only the stations remain, without the controls.
 - Shortcuts: `/` (the add field), `F` (the Find field; Esc clears it), `L` (listen now), `E` (export); they are not triggered with Ctrl/Alt/Cmd pressed (Ctrl+F stays the browser's).
+- **Public status page (2.0.0):** “Public status page (30 days)” generates a static, script-free HTML file with a strict CSP: overall state, per-station 30-day daily bars (UTC), 30-day uptime and an incident list, plus a SHA-256 line. Options: hide URLs, include incident notes (off by default). It is a snapshot and does not update by itself.
+- **Prometheus metrics and slow alert (2.0.0):** “Metrics (Prometheus)” downloads a text-format `.prom` file (usable with the textfile collector); “Slow alert” warns locally (toast, sound, notification) after two consecutive readings over the limit and when back under it.
 
 ## New features (1.1.0)
 

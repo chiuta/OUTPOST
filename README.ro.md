@@ -2,7 +2,7 @@
 
 [English](README.md) · **Română** · [Français](README.fr.md) · [Italiano](README.it.md) · [Español](README.es.md) · [Português](README.pt.md) · [Deutsch](README.de.md) · [Magyar](README.hu.md)
 
-**Versiune:** 1.2.6 · **Ultima actualizare:** 2026-10-26
+**Versiune:** 2.0.0 · **Ultima actualizare:** 2026-10-26
 
 Limbile interfeței: **Română, English, Français, Italiano, Español, Português (PT), Deutsch, Magyar**
 
@@ -32,6 +32,8 @@ Verificate în cod și, unde se poate, în teste automate (Chromium headless, re
 - Validare cu mesaje precise sub câmpul URL (spații, schemă neacceptată, gazdă invalidă); ce ai scris rămâne în câmp dacă adresa e respinsă sau duplicată.
 - Stil de tipărire: la imprimare rămân doar stațiile, fără comenzi.
 - Scurtături: `/` (câmpul de adăugare), `F` (câmpul Find; Esc îl golește), `L` (listen now), `E` (export); nu se activează cu Ctrl/Alt/Cmd apăsate (Ctrl+F rămâne al browserului).
+- **Pagină de stare publică (2.0.0):** „Pagină de stare publică (30 de zile)” generează dintr-o singură apăsare un fișier HTML static, fără script și cu CSP strictă: stare generală, pentru fiecare stație bare zilnice pe 30 de zile (UTC), disponibilitate pe 30 de zile și lista incidentelor, plus amprenta SHA-256. Opțional: fără adrese, cu notele incidentelor (implicit excluse). Pagina este un instantaneu, nu se actualizează singură.
+- **Metrici Prometheus și alertă de lentoare (2.0.0):** „Metrici (Prometheus)” descarcă un fișier `.prom` în format text (utilizabil cu textfile collector); „Alertă de lentoare” avertizează local (mesaj, sunet, notificare) după două citiri consecutive peste prag și la revenirea sub prag.
 
 ## Funcții noi (1.1.0)
 
