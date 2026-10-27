@@ -2,7 +2,9 @@
 
 [English](README.md) · **Română** · [Français](README.fr.md) · [Italiano](README.it.md) · [Español](README.es.md) · [Português](README.pt.md) · [Deutsch](README.de.md) · [Magyar](README.hu.md)
 
-**Versiune:** 2.0.0 · **Ultima actualizare:** 2026-10-26
+**Versiune:** 2.1.0 · **Ultima actualizare:** 2026-10-27
+
+**Stare:** stabil (verificările au fost testate doar pe o rețea simulată). **Offline:** aplicația și jurnalul funcționează offline; verificarea stațiilor cere internet (opțional: DNS-over-HTTPS Cloudflare și Canarul, dezactivate implicit).
 
 Limbile interfeței: **Română, English, Français, Italiano, Español, Português (PT), Deutsch, Magyar**
 
@@ -34,6 +36,9 @@ Verificate în cod și, unde se poate, în teste automate (Chromium headless, re
 - Scurtături: `/` (câmpul de adăugare), `F` (câmpul Find; Esc îl golește), `L` (listen now), `E` (export); nu se activează cu Ctrl/Alt/Cmd apăsate (Ctrl+F rămâne al browserului).
 - **Pagină de stare publică (2.0.0):** „Pagină de stare publică (30 de zile)” generează dintr-o singură apăsare un fișier HTML static, fără script și cu CSP strictă: stare generală, pentru fiecare stație bare zilnice pe 30 de zile (UTC), disponibilitate pe 30 de zile și lista incidentelor, plus amprenta SHA-256. Opțional: fără adrese, cu notele incidentelor (implicit excluse). Pagina este un instantaneu, nu se actualizează singură.
 - **Metrici Prometheus și alertă de lentoare (2.0.0):** „Metrici (Prometheus)” descarcă un fișier `.prom` în format text (utilizabil cu textfile collector); „Alertă de lentoare” avertizează local (mesaj, sunet, notificare) după două citiri consecutive peste prag și la revenirea sub prag.
+- **Limite afirmate în aplicație (2.1.0):** un panou vizibil, „Limitele monitorizării din browser”, deschis cât lista e goală (restrâns când există stații): monitorizarea merge doar cât fila e deschisă (filă închisă, telefon blocat sau cronometre încetinite în fundal = nicio verificare); CORS face ca răspunsul să fie „ceva a răspuns”, nu un cod HTTP; „Mut” poate fi o problemă locală; iar, important, **procentele de funcționare acoperă tot timpul de la adăugarea stației, iar perioadele cu fila închisă contează ca „în funcțiune” (cu excepția unei întreruperi deja deschise), deci pot supraestima disponibilitatea**. O notă scurtă apare și lângă „Ascultare automată” când e pornită.
+- **Test sunet (2.1.0):** butonul „Test sunet” redă tonul grav („Mut”) și apoi tonul acut („Contact”), ignorând orele de liniște. Sunetul și notificările la schimbare existau deja.
+- **Istoric de funcționare (2.1.0):** fiecare stație are un „Istoric de funcționare (30 de zile)” pliabil, cu o bară pe zi UTC (verde = fără întreruperi, chihlimbar ≥ 95%, roșu < 95%, gri = nemonitorizat) și procentul pe 30 de zile, calculate din aceleași episoade ca pagina publică de stare. Starea deschis/închis se păstrează la reîmprospătare.
 
 ## Funcții noi (1.1.0)
 
@@ -85,6 +90,8 @@ Alexio — Alexandru-Ionuț Chiuță, contact: alexio@trom.tf
 OUTPOST este un monitor de accesibilitate doar în browser, într-un singur fișier (fără server, fără cont, fără telemetrie). O instalare nouă nu contactează nimic; sondează doar stațiile pe care le adaugi (cerere HEAD no-cors plus /favicon.ico). Opționale, dezactivate implicit: interogări Cloudflare DNS-over-HTTPS și un canar Google/Cloudflare. „Contact” înseamnă doar că ceva a răspuns; nu poate citi codurile de stare HTTP. Starea se păstrează în localStorage; fișierele importate sunt validate. Licență MIT.
 
 ## Istoric / Changelog
+
+- 2.1.0 — 2026-10-27: panou de limite, test sunet, istoric de funcționare 30 de zile, linii Stare/Offline, `CHANGELOG.md`. Anterior: v2.0.0.
 
 ### 1.2.4 — 2026-10-22
 
