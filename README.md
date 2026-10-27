@@ -2,7 +2,7 @@
 
 **English** · [Română](README.ro.md) · [Français](README.fr.md) · [Italiano](README.it.md) · [Español](README.es.md) · [Português](README.pt.md) · [Deutsch](README.de.md) · [Magyar](README.hu.md)
 
-**Version:** 2.1.0 · **Last updated:** 2026-10-27
+**Version:** 2.2.0 · **Last updated:** 2026-10-27
 
 **Status:** stable (checks tested only on a simulated network). **Offline:** the app and its log work offline; checking stations needs internet (optional: Cloudflare DNS-over-HTTPS and the Canary, off by default).
 
@@ -118,3 +118,7 @@ fff-kit 1.1.4: touch targets and minimum text size; touch targets and text size 
 - The content is wrapped in `<main>`: 0 axe violations (landmark, region); the background now covers the full page height.
 - "Find" field, the `F` shortcut, precise validation messages under the URL field (the text stays in the field on rejection), print style; the shortcuts now ignore combinations with Ctrl/Alt/Cmd.
 - CSP: `script-src` by SHA-256 hash, without `'unsafe-inline'`.
+
+## Monitoring coverage (2.2.0)
+
+The “Uptime history (30 days)” of each station now also shows how much of the time the tab was open (a heartbeat about every minute; a gap over 5 minutes starts a new interval), with a warning that outages while the tab is closed are not recorded. Counting starts the first time 2.2.0 is opened (the past cannot be reconstructed), is stored in a separate key `outpost_watch_v1` (not part of the log export), and the line appears after at least one hour of data. The existing uptime percentages are unchanged; the coverage explains how far they can be trusted. Translations of the new text: RO and EN written, the others automatic.

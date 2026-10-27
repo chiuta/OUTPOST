@@ -2,7 +2,7 @@
 
 [English](README.md) · **Română** · [Français](README.fr.md) · [Italiano](README.it.md) · [Español](README.es.md) · [Português](README.pt.md) · [Deutsch](README.de.md) · [Magyar](README.hu.md)
 
-**Versiune:** 2.1.0 · **Ultima actualizare:** 2026-10-27
+**Versiune:** 2.2.0 · **Ultima actualizare:** 2026-10-27
 
 **Stare:** stabil (verificările au fost testate doar pe o rețea simulată). **Offline:** aplicația și jurnalul funcționează offline; verificarea stațiilor cere internet (opțional: DNS-over-HTTPS Cloudflare și Canarul, dezactivate implicit).
 
@@ -118,3 +118,7 @@ fff-kit 1.1.4: ținte tactile și text minim; ținte tactile/text corectate.
 - Conținutul este încadrat în `<main>`: 0 încălcări axe (landmark, region); fundalul acoperă acum toată înălțimea paginii.
 - Câmp „Find”, scurtătura `F`, mesaje de validare precise sub câmpul URL (textul rămâne în câmp la respingere), stil de tipărire; scurtăturile ignoră acum combinațiile cu Ctrl/Alt/Cmd.
 - CSP: `script-src` pe hash SHA-256, fără `'unsafe-inline'`.
+
+## Acoperirea monitorizării (2.2.0)
+
+„Istoricul de funcționare (30 de zile)” al fiecărei stații arată acum și cât din timp a fost fila deschisă (un puls la aproximativ un minut; un gol mai mare de 5 minute începe un interval nou), cu avertismentul că întreruperile cât fila e închisă nu se înregistrează. Numărătoarea începe la prima deschidere cu 2.2.0 (trecutul nu poate fi reconstituit), se ține într-o cheie separată `outpost_watch_v1` (nu intră în exportul jurnalului), iar linia apare după cel puțin o oră de date. Procentele de funcționare existente nu s-au schimbat; acoperirea arată cât de mult te poți baza pe ele. Textele noi: RO și EN scrise, celelalte automate.
