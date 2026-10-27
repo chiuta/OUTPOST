@@ -1,4 +1,4 @@
-// Teste v2.0.0: pagină de stare publică (30 de zile), metrici Prometheus, alertă de lentoare.
+// Teste v2.1.0: pagină de stare publică (30 de zile), metrici Prometheus, alertă de lentoare.
 // [fff-portable] axe-core: FFF_AXE / AXE_PATH, apoi pachetul `axe-core`.
 import {createRequire as __fffCR} from 'node:module';
 import {readFileSync as __fffRF} from 'node:fs';

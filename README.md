@@ -2,7 +2,9 @@
 
 **English** · [Română](README.ro.md) · [Français](README.fr.md) · [Italiano](README.it.md) · [Español](README.es.md) · [Português](README.pt.md) · [Deutsch](README.de.md) · [Magyar](README.hu.md)
 
-**Version:** 2.0.0 · **Last updated:** 2026-10-26
+**Version:** 2.1.0 · **Last updated:** 2026-10-27
+
+**Status:** stable (checks tested only on a simulated network). **Offline:** the app and its log work offline; checking stations needs internet (optional: Cloudflare DNS-over-HTTPS and the Canary, off by default).
 
 Interface languages: **Română, English, Français, Italiano, Español, Português (PT), Deutsch, Magyar**
 
@@ -34,6 +36,9 @@ Verified in the code and, where possible, in automated tests (headless Chromium,
 - Shortcuts: `/` (the add field), `F` (the Find field; Esc clears it), `L` (listen now), `E` (export); they are not triggered with Ctrl/Alt/Cmd pressed (Ctrl+F stays the browser's).
 - **Public status page (2.0.0):** “Public status page (30 days)” generates a static, script-free HTML file with a strict CSP: overall state, per-station 30-day daily bars (UTC), 30-day uptime and an incident list, plus a SHA-256 line. Options: hide URLs, include incident notes (off by default). It is a snapshot and does not update by itself.
 - **Prometheus metrics and slow alert (2.0.0):** “Metrics (Prometheus)” downloads a text-format `.prom` file (usable with the textfile collector); “Slow alert” warns locally (toast, sound, notification) after two consecutive readings over the limit and when back under it.
+- **Limits stated in the app (2.1.0):** a visible panel, “Limits of in-browser monitoring”, open while the list is empty (collapsed once stations exist): monitoring works only while the tab is open (closed tab, locked phone or throttled background timers = no checks); CORS makes the answer “something responded”, not an HTTP status; “Silent” may be a local problem; and, importantly, **uptime percentages cover the whole time since the station was added, and periods with the tab closed count as “up” (except an outage already open), so they can overstate availability**. A short note also appears next to “Auto-listen” when it is on.
+- **Sound test (2.1.0):** a “Test sound” button plays the low tone (“Silent”) and then the high tone (“Contact”), ignoring quiet hours. Sound and notifications on change already existed.
+- **Uptime history (2.1.0):** every station has a collapsible “Uptime history (30 days)” with one bar per UTC day (green = no outage, amber ≥ 95%, red < 95%, grey = not monitored) and the 30-day percentage, computed from the same outage episodes as the public status page. Open/closed state is kept across refreshes.
 
 ## New features (1.1.0)
 
@@ -85,6 +90,8 @@ Alexio — Alexandru-Ionuț Chiuță, contact: alexio@trom.tf
 OUTPOST is a single-file, browser-only reachability monitor (no server, no account, no telemetry). A fresh install contacts nothing; it only probes the stations you add (HEAD no-cors request plus /favicon.ico). Optional, off by default: Cloudflare DNS-over-HTTPS lookups and a Google/Cloudflare canary. "Contact" only means that something answered; it cannot read HTTP status codes. State lives in localStorage; imported files are validated. MIT licence.
 
 ## History / Changelog
+
+- 2.1.0 — 2026-10-27: limits panel, sound test, 30-day uptime history, status/offline lines, `CHANGELOG.md`. Previously: v2.0.0.
 
 ### 1.2.4 — 2026-10-22
 
