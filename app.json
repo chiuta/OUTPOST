@@ -39,8 +39,8 @@
     "outpost_state_v1",
     "outpost_watch_v1"
   ],
-  "sizeBytes": 573798,
-  "sha256": "e75c933265e7265bc043094781c17300d776041a8e2550b62357558a168336f0",
+  "sizeBytes": 714346,
+  "sha256": "d02f75d379593771114603d113b255bea94882553679105aa275f1f7c29849da",
   "csp": {
     "present": true,
     "directives": {
@@ -81,6 +81,10 @@
       "dialog",
       "label",
       "bundle",
+      "qr",
+      "p2p",
+      "sync",
+      "history",
       "search"
     ]
   },
@@ -92,6 +96,10 @@
       "dialog",
       "label",
       "bundle",
+      "qr",
+      "p2p",
+      "sync",
+      "history",
       "search"
     ]
   },
