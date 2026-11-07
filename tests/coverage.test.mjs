@@ -1,4 +1,4 @@
-// Teste v2.2.0: acoperirea monitorizării (cât timp a fost fila deschisă) afișată în istoricul de funcționare.
+// Teste v2.2.1: acoperirea monitorizării (cât timp a fost fila deschisă) afișată în istoricul de funcționare.
 import {createRequire} from 'node:module';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
