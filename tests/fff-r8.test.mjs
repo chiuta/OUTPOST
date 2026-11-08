@@ -60,7 +60,7 @@ console.log('— metadate și kit');
   check(`versiune ${__FFF_APP.version} în meta`, meta.v === __FFF_APP.version, meta);
   check(`data ${__FFF_APP.updated}`, meta.d === __FFF_APP.updated);
   check('footer', meta.ft === `v ${__FFF_APP.version} · ${__FFF_APP.updated}`, meta.ft);
-  check('module kit', meta.mods === 'core,store,dialog,label,bundle,qr,p2p,sync,history,search', meta.mods);
+  check('module kit', meta.mods === 'core,store,dialog,exit,label,bundle,qr,p2p,sync,history,search', meta.mods);
   check('FFF.search/bundle/label prezente', meta.ffs);
   check('3 stații randate', await page.locator('.station').count() === 3, await page.locator('.station').count());
 
