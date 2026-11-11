@@ -2,7 +2,7 @@
 
 [English](README.md) · **Română** · [Français](README.fr.md) · [Italiano](README.it.md) · [Español](README.es.md) · [Português](README.pt.md) · [Deutsch](README.de.md) · [Magyar](README.hu.md)
 
-**Versiune:** 2.2.3 · **Ultima actualizare:** 2026-11-10
+**Versiune:** 2.2.4 · **Ultima actualizare:** 2026-11-10
 
 **Stare:** stabil (verificările au fost testate doar pe o rețea simulată). **Offline:** aplicația și jurnalul funcționează offline; verificarea stațiilor cere internet (opțional: DNS-over-HTTPS Cloudflare și Canarul, dezactivate implicit).
 
