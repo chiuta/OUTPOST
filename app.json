@@ -2,8 +2,8 @@
   "schema": 1,
   "slug": "outpost",
   "name": "OUTPOST — a listening post for your websites",
-  "version": "2.2.5",
-  "updated": "2026-11-11",
+  "version": "2.2.6",
+  "updated": "2026-11-13",
   "description": "OUTPOST: a single-file, browser-only reachability monitor for your own websites. Checks run in your browser, data stays in local storage, no telemetry.",
   "egress": [
     {
@@ -39,8 +39,8 @@
     "outpost_state_v1",
     "outpost_watch_v1"
   ],
-  "sizeBytes": 754879,
-  "sha256": "f05ac607e6746e53168800165d7e79d01919abb323be8dbb0ddfa8ba87f0ae61",
+  "sizeBytes": 768456,
+  "sha256": "50fa972ae05858ef70d850579e32915d778567bc7f7b39c32b8b630ca4ea4009",
   "csp": {
     "present": true,
     "directives": {
@@ -81,6 +81,7 @@
       "dialog",
       "exit",
       "view",
+      "ux",
       "label",
       "bundle",
       "qr",
@@ -91,13 +92,14 @@
     ]
   },
   "kit": {
-    "version": "1.4.0",
+    "version": "1.5.0",
     "modules": [
       "core",
       "store",
       "dialog",
       "exit",
       "view",
+      "ux",
       "label",
       "bundle",
       "qr",

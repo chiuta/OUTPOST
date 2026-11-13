@@ -2,7 +2,7 @@
 
 **English** · [Română](README.ro.md) · [Français](README.fr.md) · [Italiano](README.it.md) · [Español](README.es.md) · [Português](README.pt.md) · [Deutsch](README.de.md) · [Magyar](README.hu.md)
 
-**Version:** 2.2.5 · **Last updated:** 2026-11-10
+**Version:** 2.2.6 · **Last updated:** 2026-11-13
 
 **Status:** stable (checks tested only on a simulated network). **Offline:** the app and its log work offline; checking stations needs internet (optional: Cloudflare DNS-over-HTTPS and the Canary, off by default).
 
