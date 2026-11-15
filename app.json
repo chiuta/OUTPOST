@@ -32,20 +32,21 @@
     "clipboard",
     "serviceWorker",
     "localStorage",
-    "Web Crypto"
+    "Web Crypto",
+    "WebGL"
   ],
   "storageKeys": [
     "outpost_lang",
     "outpost_state_v1",
     "outpost_watch_v1"
   ],
-  "sizeBytes": 768456,
-  "sha256": "50fa972ae05858ef70d850579e32915d778567bc7f7b39c32b8b630ca4ea4009",
+  "sizeBytes": 820495,
+  "sha256": "a7f3460eb688ee01616061eb3a48ab7f76bae3baa3e1fdd718134b5c9087acb5",
   "csp": {
     "present": true,
     "directives": {
       "default-src": "'none'",
-      "script-src": "sha256×3",
+      "script-src": "sha256×4",
       "style-src": "'unsafe-inline'",
       "img-src": "'self' data: http: https:",
       "connect-src": "http: https:",
